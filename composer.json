@@ -1,0 +1,44 @@
+{
+    "name": "percipioglobal/craft-shortlink",
+    "description": "A plugin to use your own subdomain as a url shortener",
+    "type": "craft-plugin",
+    "version": "1.0.0",
+    "keywords": [
+        "craft",
+        "cms",
+        "craftcms",
+        "craft-plugin",
+        "craft-shortlink"
+    ],
+    "support": {
+        "docs": "https://github.com/https://github.com/percipioglobal/craft-shortlink/blob/master/README.md",
+        "issues": "https://github.com/https://github.com/percipioglobal/craft-shortlink/issues"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Percipio",
+            "homepage": "https://percipio.london"
+        }
+    ],
+    "require": {
+        "craftcms/cms": "^3.0.0"
+    },
+    "autoload": {
+        "psr-4": {
+          "percipioglobal\\craftshortlink\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "craft-shortlink",
+        "handle": "craft-shortlink",
+        "developer": "Percipio",
+        "developerUrl": "https://percipio.london",
+        "documentationUrl": "https://github.com/https://github.com/percipioglobal/craft-shortlink/blob/master/README.md",
+        "changelogUrl": "https://raw.githubusercontent.com/https://github.com/percipioglobal/craft-shortlink/master/CHANGELOG.md",
+        "components": {
+            "craftshortlinkService": "percipioglobal\\craftshortlink\\services\\CraftshortlinkService"
+        },
+        "class": "percipioglobal\\craftshortlink\\Craftshortlink"
+    }
+}

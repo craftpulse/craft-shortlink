@@ -1,0 +1,54 @@
+{# @var craft \craft\web\twig\variables\CraftVariable #}
+{#
+/**
+ * craft-shortlink plugin for Craft CMS
+ *
+ * CraftshortlinkField Field Settings
+ *
+ * @author    Percipio
+ * @copyright Copyright (c) 2021 Percipio
+ * @link      https://percipio.london
+ * @package   Craftshortlink
+ * @since     1.0.0
+ */
+#}
+
+{% import "_includes/forms" as forms %}
+
+{% do view.registerAssetBundle("percipioglobal\\craftshortlink\\assetbundles\\craftshortlink\\CraftshortlinkAsset") %}
+
+{{ forms.selectField
+    ({
+        id: 'shortLinkLength',
+        name: 'shortLinkLength',
+        label: 'Default length'|t('craft-shortlink'),
+        instructions: 'Select the default length of the shortlink code generated.'|t('craft-shortlink'),
+        options: {
+            4:4,
+            5:5,
+            6:6,
+            7:7,
+            8:8,
+            9:9,
+            10:10
+        },
+        value: field['shortLinkLength']
+    })
+}}
+
+
+
+{{ forms.selectField
+    ({
+        id: 'shortLinkFormat',
+        name: 'shortLinkFormat',
+        label: 'Link formatting'|t('craft-shortlink'),
+        instructions: 'Select the default link formatting option.'|t('craft-shortlink'),
+         options: {
+            'alphanumeric': 'Alphanumeric',
+            'numeric': 'Numeric',
+            'alpha': 'Alpha'
+        },
+        value: field['shortLinkFormat']
+    })
+}}
