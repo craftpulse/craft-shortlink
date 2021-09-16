@@ -28,8 +28,8 @@ class Settings extends Model
     /**
      * @var string
      */
-    public $shortlinkSiteFrom = null;
-    public $shortlinkSiteTo = null;
+
+    public $config = null;
 
     // Public Methods
     // =========================================================================

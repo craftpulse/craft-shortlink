@@ -17,6 +17,17 @@
 
 {% do view.registerAssetBundle("percipioglobal\\craftshortlink\\assetbundles\\craftshortlink\\CraftshortlinkAsset") %}
 
+{{ forms.textField({
+    label: 'Shortlink Base URL'|t('craft-shortlink'),
+    instructions: 'Only used to populate the instruction field. Include the trailing slash.'|t('craft-shortlink'),
+    placeholder: 'https://short.li'|t('craft-shortlink'),
+    name: 'shortLinkBase',
+    value: field['shortLinkBase'],
+    required: true,
+    autofocus: true,
+}) }}
+
+
 {{ forms.selectField
     ({
         id: 'shortLinkLength',
@@ -36,8 +47,6 @@
     })
 }}
 
-
-
 {{ forms.selectField
     ({
         id: 'shortLinkFormat',
@@ -45,9 +54,7 @@
         label: 'Link formatting'|t('craft-shortlink'),
         instructions: 'Select the default link formatting option.'|t('craft-shortlink'),
          options: {
-            'alphanumeric': 'Alphanumeric',
-            'numeric': 'Numeric',
-            'alpha': 'Alpha'
+            'alphanumeric': 'Alphanumeric'
         },
         value: field['shortLinkFormat']
     })

@@ -10,7 +10,7 @@
 
 namespace percipioglobal\craftshortlink\fields;
 
-use percipioglobal\craftshortlink\Craftshortlink;
+use percipioglobal\craftshortlink\Craftshortlink as Plugin;
 use percipioglobal\craftshortlink\assetbundles\craftshortlinkfield\CraftshortlinkFieldAsset;
 
 use Craft;
@@ -33,6 +33,7 @@ class CraftshortlinkField extends Field
     public $shortLinkLength = '6';
     public $shortLinkFormat = 'alphanumeric';
     public $shortLinkTextOnly = null;
+    public $shortLinkBase = null;
 
 
     // Static Methods
@@ -89,9 +90,34 @@ class CraftshortlinkField extends Field
         return Craft::$app->getView()->renderTemplate(
             'craft-shortlink/_components/fields/CraftshortlinkField_settings',
             [
-                'field' => $this,
+                'field' => $this
             ]
         );
+    }
+
+    private function generateShortLink($settings,$shortLink){
+        // get options
+        $shortLinkLength = $settings->shortLinkLength;
+        $shortLinkFormat = $settings->shortLinkFormat;
+        // remove any spaces / foreign chars
+        $shortLink = str_replace(' ', '', $shortLink); // removes all spaces
+        $shortLink = preg_replace('/[^A-Za-z0-9\-]/', '', $shortLink); // Removes special chars
+        // generate allowed char arrays
+        $formats = array();
+        $formats[] = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        $formats[] = 'abcdefghjkmnpqrstuvwxyz';
+        $formats[] = '1234567890';
+
+        if(!$shortLink){
+            foreach ($formats as $format) {
+                $shortLink .= $format[array_rand(str_split($format))];
+            }
+             while(strlen($shortLink) < $shortLinkLength) {
+                 $randomFormat = $formats[array_rand($formats)];
+                 $shortLink .= $randomFormat[array_rand(str_split($randomFormat))];
+            }
+        }
+        return $shortLink;
     }
 
     /**
@@ -121,10 +147,10 @@ class CraftshortlinkField extends Field
             'craft-shortlink/_components/fields/CraftshortlinkField_input',
             [
                 'name' => $this->handle,
-                'value' => $value,
+                'value' => $this->generateShortLink($this, $value),
                 'field' => $this,
                 'id' => $id,
-                'namespacedId' => $namespacedId,
+                'namespacedId' => $namespacedId
             ]
         );
     }

@@ -121,6 +121,7 @@ class Craftshortlink extends Plugin
         return new Settings();
     }
 
+
     /**
      * @inheritdoc
      */

@@ -14,11 +14,15 @@
 #}
 
 {% import "_includes/forms" as forms %}
+{% set shortLinkBase = field.shortLinkBase %}
 
 {{ forms.textField({
-        label: 'Some Field',
-        instructions: 'Enter some text here.',
+        instructions: 'Shortlink for this page: ' ~ shortLinkBase ~ value,
+        required: true,
         id: name,
+        class: 'nicetext code',
         name: name,
-        value: value})
+        value: value,
+        code: true
+    })
 }}

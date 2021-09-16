@@ -1,12 +1,9 @@
 {
     "name": "percipioglobal/craft-shortlink",
-    "description": "A plugin to use your own subdomain as a url shortener",
+    "description": "A plugin to generate a url short link",
     "type": "craft-plugin",
-    "version": "1.0.0",
+    "version": "0.0.1",
     "keywords": [
-        "craft",
-        "cms",
-        "craftcms",
         "craft-plugin",
         "craft-shortlink"
     ],
