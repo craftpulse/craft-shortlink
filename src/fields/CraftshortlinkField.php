@@ -16,6 +16,7 @@ use percipioglobal\craftshortlink\assetbundles\craftshortlinkfield\Craftshortlin
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\PreviewableFieldInterface;
 use craft\helpers\Db;
 use yii\db\Schema;
 use craft\helpers\Json;
@@ -25,7 +26,7 @@ use craft\helpers\Json;
  * @package   Craftshortlink
  * @since     1.0.0
  */
-class CraftshortlinkField extends Field
+class CraftshortlinkField extends Field implements PreviewableFieldInterface
 {
     // Public Properties
     // =========================================================================
@@ -162,7 +163,8 @@ class CraftshortlinkField extends Field
      */
     public function getTableAttributeHtml($value, ElementInterface $element): string
     {
-        return '<span>'.$value.'</span>';
-
+        if(!empty($value)){
+            return '<span>'.$value.'</span>';
+        }
     }
 }

@@ -2,7 +2,7 @@
     "name": "percipioglobal/craft-shortlink",
     "description": "A plugin to generate a url short link",
     "type": "craft-plugin",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "keywords": [
         "craft-plugin",
         "craft-shortlink"
