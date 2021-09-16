@@ -154,4 +154,15 @@ class CraftshortlinkField extends Field
             ]
         );
     }
+
+    /**
+     * @param mixed $value
+     * @param ElementInterface $element
+     * @return string
+     */
+    public function getTableAttributeHtml($value, ElementInterface $element): string
+    {
+        return '<span>'.$value.'</span>';
+
+    }
 }
