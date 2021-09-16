@@ -1,6 +1,6 @@
 # craft-shortlink plugin for Craft CMS 3.x
 
-A plugin to use your own subdomain as a url shortener
+A plugin to generate editable short urls from entries
 
 ![Screenshot](resources/img/plugin-logo.png)
 
@@ -24,20 +24,6 @@ To install the plugin, follow these instructions.
 
 ## craft-shortlink Overview
 
--Insert text here-
-
-## Configuring craft-shortlink
-
--Insert text here-
-
-## Using craft-shortlink
-
--Insert text here-
-
-## craft-shortlink Roadmap
-
-Some things to do, and ideas for potential features:
-
-* Release it
+Currently in alpha, do not use in production environments
 
 Brought to you by [Percipio](https://percipio.london)
