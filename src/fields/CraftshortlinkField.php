@@ -166,5 +166,7 @@ class CraftshortlinkField extends Field implements PreviewableFieldInterface
         if(!empty($value)){
             return '<span>'.$value.'</span>';
         }
+
+        return '<span>-</span>';
     }
 }
