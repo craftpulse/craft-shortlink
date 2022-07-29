@@ -1,41 +1,58 @@
 {
-    "name": "percipioglobal/craft-shortlink",
-    "description": "A plugin to generate a url short link",
+    "name": "percipiolondon/craft-shortlink",
+    "description": "This Craft CMS plugin adds support to generate an unique url short link",
     "type": "craft-plugin",
-    "version": "1.0.3",
+    "version": "4.0.0-beta.1",
     "keywords": [
-        "craft-plugin",
-        "craft-shortlink"
+        "craft",
+        "cms",
+        "shortlink",
+        "craftcms",
+        "craft-plugin"
     ],
     "support": {
-        "docs": "https://github.com/https://github.com/percipioglobal/craft-shortlink/blob/master/README.md",
-        "issues": "https://github.com/https://github.com/percipioglobal/craft-shortlink/issues"
+        "docs": "https://github.com/percipioglobal/craft-shortlink/blob/v4/README.md",
+        "issues": "https://github.com/percipioglobal/craft-shortlink/issues"
     },
-    "license": "MIT",
+    "license": "proprietary",
     "authors": [
         {
-            "name": "Percipio",
+            "name": "Percipio.London",
             "homepage": "https://percipio.london"
         }
     ],
     "require": {
-        "craftcms/cms": "^3.0.0"
+        "php": "^8.0.2",
+        "craftcms/cms": "^4.0.0",
+        "nystudio107/craft-plugin-vite": "^4.0.0"
     },
+    "require-dev": {
+        "roave/security-advisories": "dev-latest",
+        "craftcms/phpstan": "dev-main",
+        "codeception/codeception": "^4.1.29",
+        "vlucas/phpdotenv": "^3.0"
+    },
+    "repositories": [
+        {
+            "type": "composer",
+            "url": "https://asset-packagist.org"
+        }
+    ],
     "autoload": {
         "psr-4": {
-          "percipioglobal\\craftshortlink\\": "src/"
+            "percipiolondon\\shortlink\\": "src/"
         }
     },
+    "scripts": {
+        "phpstan": "phpstan --memory-limit=1G"
+    },
     "extra": {
-        "name": "craft-shortlink",
-        "handle": "craft-shortlink",
-        "developer": "Percipio",
+        "name": "Shortlink",
+        "handle": "shortlink",
+        "developer": "percipiolondon",
         "developerUrl": "https://percipio.london",
-        "documentationUrl": "https://github.com/https://github.com/percipioglobal/craft-shortlink/blob/master/README.md",
-        "changelogUrl": "https://raw.githubusercontent.com/https://github.com/percipioglobal/craft-shortlink/master/CHANGELOG.md",
-        "components": {
-            "craftshortlinkService": "percipioglobal\\craftshortlink\\services\\CraftshortlinkService"
-        },
-        "class": "percipioglobal\\craftshortlink\\Craftshortlink"
+        "documentationUrl": "https://github.com/percipioglobal/craft-shortlink/blob/v4/README.md",
+        "changelogUrl": "https://raw.githubusercontent.com/percipioglobal/craft-shortlink/v4/CHANGELOG.md",
+        "class": "percipiolondon\\shortlink\\Shortlink"
     }
 }
