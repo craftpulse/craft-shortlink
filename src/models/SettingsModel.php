@@ -3,6 +3,7 @@
 namespace percipiolondon\shortlink\models;
 
 use craft\base\Model;
+use craft\behaviors\EnvAttributeParserBehavior;
 
 /**
  *
@@ -20,4 +21,59 @@ class SettingsModel extends Model
      * @var bool
      */
     public bool $allowCustom = true;
+
+    /**
+     * @var string The public-facing name of the plugin
+     */
+    public string $pluginName = 'Shortlink';
+
+    /**
+     * @var string
+     */
+    public string $alphaNumeric = 'alphaNumeric';
+
+    /**
+     * @var string
+     */
+    public string $casing = 'mixed';
+
+    /**
+     * @var int
+     */
+    public int $minLength = 6;
+
+    /**
+     * @var int
+     */
+    public int $maxLength = 20;
+
+    // Public Methods
+    // ==============
+
+    /**
+     * @inheritdoc
+     */
+    protected function defineBehaviors(): array
+    {
+        return [
+            'parser' => [
+                'class' => EnvAttributeParserBehavior::class,
+                'attributes' => ['allowCustom', 'alphaNumeric', 'casing', 'minLength', 'maxLength'],
+            ],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function defineRules(): array
+    {
+        return [
+            [['alphaNumeric', 'casing', 'pluginName'], 'string'],
+            ['maxLength', 'integer', 'min' => 6, 'max' => 20],
+            ['minLength', 'integer', 'min' => 6, 'max' => 10],
+            [['allowCustom'], 'boolean'],
+            [['allowCustom', 'alphaNumeric', 'casing', 'maxLength', 'minLength'], 'required'],
+        ];
+    }
 }

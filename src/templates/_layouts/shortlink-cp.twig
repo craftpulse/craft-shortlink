@@ -1,0 +1,15 @@
+{% extends '_layouts/cp' %}
+
+{% block head %}
+
+    {{ parent() }}
+
+    {% set tagOptions = {
+        'depends': [
+            'percipiolondon\\shortlink\\assetbundles\\shortlink\\ShortlinkAsset'
+        ]
+    } %}
+
+    {{ craft.shortlink.register('src/js/shortlink.ts', false, tagOptions, tagOptions) }}
+
+{% endblock %}

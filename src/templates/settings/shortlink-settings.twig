@@ -1,0 +1,80 @@
+{# @var craft \craft\web\twig\variables\CraftVariable #}
+{#
+/**
+ * Shortlink plugin for Craft CMS 4.x
+ *
+ * Shortlink shortlink-settings.twig
+ *
+ * @author    percipio.london
+ * @copyright Copyright (c) 2022 Percipio Global Ltd.
+ * @link      https://percipio.london
+ * @package   Shortlink
+ * @since     1.0.0
+ */
+#}
+
+{% requirePermission 'shortlink:plugin-settings' %}
+
+{% extends '_layouts/cp' %}
+{% import '_includes/forms' as forms %}
+
+{% do view.registerAssetBundle('percipiolondon\\shortlink\\assetbundles\\shortlink\\ShortlinkAsset') %}
+
+{% block content %}
+
+    <input type="hidden" name="action" value="shortlink/settings/save-plugin-settings">
+    <input type="hidden" name="pluginHandle" value="shortlink">
+
+    {{ redirectInput('shortlink/plugin') }}
+
+    {{ forms.selectField({
+        label: 'Link generation characters'|t('shortlink'),
+        instructions: 'Select your link generation characters, possibilities are alpha, numeric, alpha-numeric'|t('shortlink'),
+        suggestEnvVars: true,
+        id: 'shortlink-alphaNumeric',
+        name: 'alphaNumeric',
+        value: settings.alphaNumeric,
+        options: {
+            'alpha': 'Alpha Only'|t('shortlink'),
+            'numeric': 'Numeric Only'|t('shortlink'),
+            'alphaNumeric': 'Alpha Numeric'|t('shortlink'),
+        },
+        required: true,
+    }) }}
+
+    {{ forms.selectField({
+        label: 'Link generation casing'|t('shortlink'),
+        instructions: 'Select if you want lowercase, uppercase or a combination of both'|t('shortlink'),
+        suggestEnvVars: true,
+        id: 'shortlink-casing',
+        name: 'casing',
+        value: settings.casing,
+        options: {
+            'lowercase': 'Lowercase'|t('shortlink'),
+            'uppercase': 'Uppercase'|t('shortlink'),
+            'mixed': 'Mixed'|t('shortlink'),
+        },
+        required: true,
+    }) }}
+
+    {{  forms.textField({
+        label: 'Minimum link Length'|t('shortlink'),
+        instructions: 'The minimum link of the generated link'|t('shortlink'),
+        suggestEnvVars: true,
+        id: 'shortlink-minlength',
+        name: 'minLength',
+        value: settings.minLength,
+        required: false,
+    }) }}
+
+    {{  forms.textField({
+        label: 'Maximum link Length'|t('shortlink'),
+        instructions: 'The maximum link of the generated link'|t('shortlink'),
+        suggestEnvVars: true,
+        id: 'shortlink-maxlength',
+        name: 'maxLength',
+        value: settings.maxLength,
+        required: false,
+    }) }}
+
+{% endblock %}

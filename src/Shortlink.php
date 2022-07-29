@@ -4,7 +4,13 @@ namespace percipiolondon\shortlink;
 
 use Craft;
 use craft\base\Plugin;
+use craft\events\RegisterUrlRulesEvent;
+use craft\events\RegisterUserPermissionsEvent;
+use craft\helpers\UrlHelper;
+use craft\services\UserPermissions;
 use craft\web\twig\variables\CraftVariable;
+use craft\web\UrlManager;
+use craft\web\View;
 use nystudio107\pluginvite\services\VitePluginService;
 use percipiolondon\shortlink\assetbundles\shortlink\ShortlinkAsset;
 use percipiolondon\shortlink\models\SettingsModel as Settings;
@@ -40,6 +46,11 @@ class Shortlink extends Plugin
      * @var Settings|null
      */
     public static ?Settings $settings = null;
+
+    /**
+     * @var View|null
+     */
+    public static ?View $view = null;
 
     // Public Properties
     // =================
@@ -92,7 +103,16 @@ class Shortlink extends Plugin
         parent::init();
         self::$plugin = $this;
 
-        // Register variable
+        // Initialize properties
+        self::$settings = self::$plugin->getSettings();
+        self::$view = Craft::$app->getView();
+
+        $this->name = self::$settings->pluginName;
+
+        // Install event listeners
+        $this->installEventListeners();
+
+        // Register variables
         Event::on(
             CraftVariable::class,
             CraftVariable::EVENT_INIT,
@@ -125,5 +145,125 @@ class Shortlink extends Plugin
     protected function createSettingsModel(): Settings
     {
         return new Settings();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSettingsResponse(): mixed
+    {
+        return Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('shortlink/plugin'));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getCpNavItem(): ?array
+    {
+        $subNavs = [];
+        $navItem = parent::getCpNavItem();
+        /** @var User $currentUser */
+        $request = Craft::$app->getRequest();
+        $currentUser = Craft::$app->getUser()->getIdentity();
+
+        // Only show sub navigation the user has permission to view
+        if ($currentUser->can('shortlink:dashboard')) {
+            $subNavs['dashboard'] = [
+                'label' => Craft::t('shortlink', 'Dashboard'),
+                'url' => 'shortlink/dashboard',
+            ];
+        }
+
+        $editableSettings = true;
+        // check against allowAdminChanges
+        if (!Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+            $editableSettings = false;
+        }
+
+        if ($editableSettings && $currentUser->can('shortlink:plugin-settings')) {
+            $subNavs['plugin'] = [
+                'label' => Craft::t('shortlink', 'Plugin settings'),
+                'url' => 'shortlink/plugin'
+            ];
+        }
+
+        return array_merge($navItem, [
+            'subnav' => $subNavs,
+        ]);
+    }
+
+    // Protected Methods
+    // =================
+
+    protected function installEventListeners()
+    {
+        $request = Craft::$app->getRequest();
+        // Install our event listeners
+        if ($request->getIsCpRequest() && !$request->getIsConsoleRequest()) {
+            $this->installCpEventListeners();;
+        }
+    }
+
+    protected function installCpEventListeners(): void
+    {
+        Event::on(
+            UrlManager::class,
+            UrlManager::EVENT_REGISTER_CP_URL_RULES,
+            function (RegisterUrlRulesEvent $event) {
+                Craft::debug(
+                    'UrlManager::EVENT_REGISTER_CP_URL_RULES',
+                    __METHOD__
+                );
+                // Register our control panel routes
+                $event->rules = array_merge(
+                    $event->rules,
+                    $this->customAdminCpRoutes()
+                );
+            }
+        );
+
+        Event::on(
+            UserPermissions::class,
+            UserPermissions::EVENT_REGISTER_PERMISSIONS,
+            function (RegisterUserPermissionsEvent $event) {
+                Craft::debug(
+                    'UserPermissions::EVENT_REGISTER_PERMISSIONS',
+                    __METHOD__
+                );
+                // Register our custom permissions
+                $event->permissions[Craft::t('shortlink', 'Shortlink')] = $this->customAdminCpPermissions();
+            }
+        );
+    }
+
+    /**
+     * Return the custom Control Panel routes
+     *
+     * @return array
+     */
+    protected function customAdminCpRoutes(): array
+    {
+        return [
+            'shortlink' => 'shortlink/settings/dashboard',
+            'shortlink/dashboard' => 'shortlink/settings/dashboard',
+            'shortlink/plugin' => 'shortlink/settings/plugin',
+        ];
+    }
+
+    /**
+     * Return the custom Control Panel user permissions.
+     *
+     * @return array
+     */
+    protected function customAdminCpPermissions(): array
+    {
+        return [
+            'shortlink:dashboard' => [
+                'label' => Craft::t('shortlink', 'Dashboard'),
+            ],
+            'shortlink:plugin-settings' => [
+                'label' => Craft::t('shortlink', 'Edit Plugin Settings'),
+            ]
+        ];
     }
 }
