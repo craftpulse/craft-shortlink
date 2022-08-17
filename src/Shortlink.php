@@ -3,7 +3,11 @@
 namespace percipiolondon\shortlink;
 
 use Craft;
+use craft\base\Element;
 use craft\base\Plugin;
+use craft\elements\Entry;
+use craft\events\DefineHtmlEvent;
+use craft\events\RegisterPreviewTargetsEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\helpers\UrlHelper;
@@ -29,6 +33,8 @@ use yii\base\event;
 
 class Shortlink extends Plugin
 {
+    protected const SHORTLINK_PREVIEW_PATH = 'shortlink/sidebar/preview-shortlink';
+
     // Static Properties
     // =================
 
@@ -200,7 +206,7 @@ class Shortlink extends Plugin
         $request = Craft::$app->getRequest();
         // Install our event listeners
         if ($request->getIsCpRequest() && !$request->getIsConsoleRequest()) {
-            $this->installCpEventListeners();;
+            $this->installCpEventListeners();
         }
     }
 
@@ -232,6 +238,34 @@ class Shortlink extends Plugin
                 );
                 // Register our custom permissions
                 $event->permissions[Craft::t('shortlink', 'Shortlink')] = $this->customAdminCpPermissions();
+            }
+        );
+
+        Event::on(
+            Entry::class,
+            Element::EVENT_REGISTER_PREVIEW_TARGETS,
+            static function (RegisterPreviewTargetsEvent $e) {
+                /** @var Element $element */
+                $element = $e->sender;
+                if ($element->uri !== null) {
+                    $e->previewTargets[] = [
+                        'label' => Craft::t('shortlink', 'Shortlink'),
+                        'url' => UrlHelper::siteUrl(self::SHORTLINK_PREVIEW_PATH, [
+                            'elementId' => $element->id,
+                            'siteId' => $element->siteId,
+                        ]),
+                    ];
+//                    Craft::dd($e);
+                }
+            }
+        );
+
+        Event::on(
+            Entry::class,
+            Entry::EVENT_DEFINE_SIDEBAR_HTML,
+            static function (DefineHtmlEvent $event) {
+                $html = Craft::$app->view->renderTemplate('shortlink/sidebar/preview-shortlink');
+                $event->html .= $html;
             }
         );
     }

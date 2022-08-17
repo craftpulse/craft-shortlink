@@ -11,7 +11,7 @@ use percipiolondon\shortlink\db\Table;
 /**
  * Install migration.
  */
-class Install extends Migration
+class m220817_145344_shortlink_table_setup extends Migration
 {
     /**
      * @var string|null
