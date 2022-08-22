@@ -66,9 +66,12 @@ class SettingsController extends Controller
         $settings = [
             'allowCustom' => Craft::$app->getRequest()->getBodyParam('allowCustom'),
             'alphaNumeric' => Craft::$app->getRequest()->getBodyParam('alphaNumeric'),
+            'redirectBehavior' => Craft::$app->getRequest()->getBodyParam('redirectBehavior'),
             'casing' => Craft::$app->getRequest()->getBodyParam('casing'),
             'maxLength' => Craft::$app->getRequest()->getBodyParam('maxLength'),
             'minLength' => Craft::$app->getRequest()->getBodyParam('minLength'),
+            'redirect' => Craft::$app->getRequest()->getBodyParam('redirect'),
+            'redirectQueryString' => Craft::$app->getRequest()->getBodyParam('redirectQueryString'),
         ];
 
         if(!Craft::$app->getPlugins()->savePluginSettings($plugin, $settings)) {

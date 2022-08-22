@@ -20,12 +20,19 @@
 
 {% do view.registerAssetBundle('percipiolondon\\shortlink\\assetbundles\\shortlink\\ShortlinkAsset') %}
 
+{% set tabs = {
+    general: { label: 'General Settings'|t('shortlink'), url: '#general' },
+    redirects: { label: 'Redirect Settings'|t('shortlink'), url: '#redirects' },
+} %}
+
 {% block content %}
 
     <input type="hidden" name="action" value="shortlink/settings/save-plugin-settings">
     <input type="hidden" name="pluginHandle" value="shortlink">
 
     {{ redirectInput('shortlink/plugin') }}
+
+    <div id="general">
 
     {{ forms.selectField({
         label: 'Link generation characters'|t('shortlink'),
@@ -76,5 +83,45 @@
         value: settings.maxLength,
         required: false,
     }) }}
+
+    </div>
+
+    <div id="redirects">
+        {{ forms.selectField({
+            label: 'Default redirect behaviour'|t('shortlink'),
+            instructions: 'Choose the default redirect behaviour, permanent (301) or temporary (302)'|t('shortlink'),
+            suggestEnvVars: true,
+            id: 'shortlink-redirect',
+            name: 'redirect',
+            value: settings.redirect,
+            options: {
+                '301': 'Permanent'|t('shortlink'),
+                '302': 'Temporary'|t('shortlink'),
+            },
+            required: true,
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: "Redirect Query Strings?"|t('shortlink'),
+            instructions: 'If query string values should be taken into consideration or ignored.',
+            id: 'shortlink-redirect-query-strings',
+            name: 'redirectQueryString',
+            on: settings.redirectQueryString,
+        }) }}
+
+        {{ forms.selectField({
+            label: 'Broken shortlink behaviour'|t('shortlink'),
+            instructions: 'If the shortlink doesn\'t exist or is deleted, select the behaviour.'|t('shortlink'),
+            suggestEnvVars: true,
+            id: 'shortlink-redirect-behaviour',
+            name: 'redirectBehaviour',
+            value: settings.redirectBehavior,
+            options: {
+                'homepage': 'Homepage'|t('shortlink'),
+                '404': '404 Error Page'|t('shortlink'),
+            },
+            required: true,
+        }) }}
+    </div>
 
 {% endblock %}

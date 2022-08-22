@@ -47,6 +47,22 @@ class SettingsModel extends Model
      */
     public int $maxLength = 20;
 
+    /**
+     * @var string
+     */
+    public string $redirect = '301';
+
+    /**
+     * @var bool
+     */
+    public bool $redirectQueryString = false;
+
+    /**
+     * @var string
+     */
+    public string $redirectBehavior = 'homepage';
+
+
     // Public Methods
     // ==============
 
@@ -69,11 +85,11 @@ class SettingsModel extends Model
     public function defineRules(): array
     {
         return [
-            [['alphaNumeric', 'casing', 'pluginName'], 'string'],
+            [['alphaNumeric', 'redirectBehavior', 'casing', 'pluginName', 'redirect'], 'string'],
             ['maxLength', 'integer', 'min' => 6, 'max' => 20],
             ['minLength', 'integer', 'min' => 6, 'max' => 10],
-            [['allowCustom'], 'boolean'],
-            [['allowCustom', 'alphaNumeric', 'casing', 'maxLength', 'minLength'], 'required'],
+            [['allowCustom', 'redirectQueryString'], 'boolean'],
+            [['allowCustom', 'alphaNumeric', 'redirectBehavior', 'casing', 'maxLength', 'minLength', 'redirect', 'redirectQueryString'], 'required'],
         ];
     }
 }

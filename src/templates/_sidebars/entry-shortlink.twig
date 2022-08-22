@@ -1,0 +1,14 @@
+{% import "_includes/forms" as forms %}
+
+{% do view.registerAssetBundle('percipiolondon\\shortlink\\assetbundles\\shortlink\\ShortlinkAsset') %}
+
+{{ forms.textField({
+    label: "Shortlink"|t('shortlink'),
+    siteId: 1,
+    id: 'shortlink',
+    name: 'shortlink',
+    autocorrect: false,
+    autocapitalize: false,
+    value: 'shortlink-generated-thing',
+    placeholder: 'Generate shortlink'|t('app'),
+}) }}

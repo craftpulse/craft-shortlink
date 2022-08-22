@@ -4,6 +4,8 @@ namespace percipiolondon\shortlink;
 
 use Craft;
 use craft\base\Plugin;
+use craft\base\Element;
+use craft\events\DefineHtmlEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\helpers\UrlHelper;
@@ -23,7 +25,6 @@ use yii\base\event;
 * @package   Shortlink
 * @since     1.0.0
 * @property VitePluginService  $vite
-* @property TimeloopService $timeloop
 *
 */
 
@@ -232,6 +233,14 @@ class Shortlink extends Plugin
                 );
                 // Register our custom permissions
                 $event->permissions[Craft::t('shortlink', 'Shortlink')] = $this->customAdminCpPermissions();
+            }
+        );
+
+        Event::on(
+            Element::class,
+            Element::EVENT_DEFINE_SIDEBAR_HTML,
+            static function (DefineHtmlEvent $event) {
+                $event->html .= Craft::$app->view->renderTemplate('shortlink/_sidebars/entry-shortlink.twig');
             }
         );
     }
