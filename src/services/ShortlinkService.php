@@ -54,8 +54,8 @@ class ShortlinkService extends Component
         $request = Craft::$app->getRequest();
 
         $shortlink = [
-            'shortlinkUri' => Craft::$app->getRequest()->getBodyParam('shortlink-uri'),
-            'redirectType' => Craft::$app->getRequest()->getBodyParam('shortlink-redirect-type'),
+            'shortlinkUri' => $request->getBodyParam('shortlink-uri'),
+            'redirectType' => $request->getBodyParam('shortlink-redirect-type'),
         ];
 
         $this->saveShortlink($event->sender, $shortlink);
@@ -77,7 +77,7 @@ class ShortlinkService extends Component
         $shortlink->ownerId = $entry->id;
         $shortlink->shortlinkUri = $post['shortlinkUri'] ?? null;
         $shortlink->httpCode = $post['redirectType'] ?? null;
-//        $shortlink->status = ShortlinkElement::STATUS_ACTIVE;
+        $shortlink->shortlinkStatus = ShortlinkElement::STATUS_ACTIVE;
 
         if (!Craft::$app->getElements()->saveElement($shortlink)) {
             $session->setError(Craft::t('shortlink', 'Could not save the shortlink.'));

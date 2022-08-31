@@ -7,6 +7,7 @@ use craft\base\Element;
 
 use DateTime;
 
+use Exception;
 use percipiolondon\shortlink\elements\db\ShortlinkQuery;
 use percipiolondon\shortlink\records\ShortlinkRecord;
 
@@ -15,8 +16,8 @@ class ShortlinkElement extends Element
     // Constants
     // =========================================================================
 
-//    public const STATUS_ACTIVE = 'active';
-//    public const STATUS_INACTIVE = 'inactive';
+    public const STATUS_ACTIVE = 'active';
+    public const STATUS_INACTIVE = 'inactive';
 
     // Properties
     // =========================================================================
@@ -27,6 +28,7 @@ class ShortlinkElement extends Element
     public ?string $httpCode = null;
     public ?string $hitCount = null;
     public ?DateTime $lastUsed = null;
+    public string $shortlinkStatus = self::STATUS_ACTIVE;
 
     // Static Methods
     // =========================================================================
@@ -43,21 +45,21 @@ class ShortlinkElement extends Element
     /**
      * @inheritdoc
      */
-//    public static function hasStatuses(): bool
-//    {
-//        return false;
-//    }
+    public static function hasStatuses(): bool
+    {
+        return false;
+    }
 
     /**
      * @inheritdoc
      */
-//    public static function statuses(): array
-//    {
-//        return [
-//            self::STATUS_ACTIVE => Craft::t('shortlink', 'Active'),
-//            self::STATUS_INACTIVE => Craft::t('shortlink', 'Inactive'),
-//        ];
-//    }
+    public static function statuses(): array
+    {
+        return [
+            self::STATUS_ACTIVE => Craft::t('shortlink', 'Active'),
+            self::STATUS_INACTIVE => Craft::t('shortlink', 'Inactive'),
+        ];
+    }
 
     public static function find(): ShortlinkQuery
     {
@@ -102,10 +104,10 @@ class ShortlinkElement extends Element
     // Public Methods
     // =========================================================================
 
-//    public function getStatus(): ?string
-//    {
-//        return $this->status;
-//    }
+    public function getStatus(): ?string
+    {
+        return $this->shortlinkStatus;
+    }
 
     public function afterSave(bool $isNew): void
     {
@@ -114,7 +116,7 @@ class ShortlinkElement extends Element
                 $record = ShortlinkRecord::findOne($this->id);
 
                 if ($record) {
-                    throw new \Exception('Invalid shortlink ID: ' . $this->id);
+                    throw new Exception('Invalid shortlink ID: ' . $this->id);
                 }
             } else {
                 $record = new ShortlinkRecord();
@@ -124,14 +126,14 @@ class ShortlinkElement extends Element
             $record->siteId = Craft::$app->getSites()->currentSite->id;
             $record->ownerId = $this->ownerId;
             $record->shortlinkUri = $this->shortlinkUri;
-            $record->destination = $this->destination;
+            $record->destination = $this->destination ?? null;
             $record->httpCode = $this->httpCode;
             $record->hitCount = $this->hitCount;
             $record->lastUsed = $this->lastUsed;
-//            $record->status = $this->status;
+            $record->status = $this->status;
 
             $record->save();
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Craft::error($e->getMessage(), __METHOD__);
         }
     }
