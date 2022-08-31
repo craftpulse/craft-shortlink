@@ -1,0 +1,15 @@
+{
+  "src/js/shortlink.ts": {
+    "file": "assets/shortlink.318965f2.js",
+    "src": "src/js/shortlink.ts",
+    "isEntry": true,
+    "css": [
+      "assets/shortlink.20b18875.css"
+    ]
+  },
+  "src/js/shortlink-field.ts": {
+    "file": "assets/shortlink-field.3d1e21cb.js",
+    "src": "src/js/shortlink-field.ts",
+    "isEntry": true
+  }
+}
