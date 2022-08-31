@@ -3,9 +3,11 @@
 namespace percipiolondon\shortlink;
 
 use Craft;
-use craft\base\Plugin;
 use craft\base\Element;
+use craft\base\Plugin;
+use craft\elements\Entry;
 use craft\events\DefineHtmlEvent;
+use craft\events\ModelEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\helpers\UrlHelper;
@@ -15,21 +17,28 @@ use craft\web\UrlManager;
 use craft\web\View;
 use nystudio107\pluginvite\services\VitePluginService;
 use percipiolondon\shortlink\assetbundles\shortlink\ShortlinkAsset;
+use percipiolondon\shortlink\helpers\PluginTemplate;
 use percipiolondon\shortlink\models\SettingsModel as Settings;
+use percipiolondon\shortlink\services\ShortlinkService;
 use percipiolondon\shortlink\variables\ShortlinkVariable;
 use yii\base\event;
 
 /**
 *
 * @author    percipiolondon
-* @package   Shortlink
+* @package   ShortlinkElement
 * @since     1.0.0
+*
+* @property ShortlinkService $shortlinkService
 * @property VitePluginService  $vite
+* @property Settings $settings
 *
 */
 
 class Shortlink extends Plugin
 {
+    protected const SHORTLINK_PREVIEW_PATH = 'shortlink/sidebar/preview-shortlink';
+
     // Static Properties
     // =================
 
@@ -81,6 +90,7 @@ class Shortlink extends Plugin
     {
         $config['components'] = [
             'shortlink' => __CLASS__,
+            'generator' => ShortlinkService::class,
             'vite' => [
                 'class' => VitePluginService::class,
                 'assetClass' => ShortlinkAsset::class,
@@ -201,7 +211,7 @@ class Shortlink extends Plugin
         $request = Craft::$app->getRequest();
         // Install our event listeners
         if ($request->getIsCpRequest() && !$request->getIsConsoleRequest()) {
-            $this->installCpEventListeners();;
+            $this->installCpEventListeners();
         }
     }
 
@@ -232,17 +242,39 @@ class Shortlink extends Plugin
                     __METHOD__
                 );
                 // Register our custom permissions
-                $event->permissions[Craft::t('shortlink', 'Shortlink')] = $this->customAdminCpPermissions();
+                $event->permissions[] = [
+                    'heading' => Craft::t('shortlink', 'ShortlinkElement'),
+                    'permissions' => $this->customAdminCpPermissions()
+                ];
             }
         );
 
         Event::on(
-            Element::class,
-            Element::EVENT_DEFINE_SIDEBAR_HTML,
-            static function (DefineHtmlEvent $event) {
-                $event->html .= Craft::$app->view->renderTemplate('shortlink/_sidebars/entry-shortlink.twig');
+            Entry::class,
+            Entry::EVENT_DEFINE_SIDEBAR_HTML,
+            function (DefineHtmlEvent $event) {
+                Craft::debug(
+                    'Entry::EVENT_DEFINE_SIDEBAR_HTML',
+                    __METHOD__
+                );
+                /* @var Entry $entry */
+                $entry = $event->sender;
+                $html = '';
+                    if ($entry->uri !== null) {
+                        $html = $this->renderSidebar($entry);
+                    }
+                    $event->html .= $html;
             }
         );
+
+        Event::on(
+            Entry::class,
+            Entry::EVENT_AFTER_SAVE,
+            function (ModelEvent $event) {
+                self::getInstance()->generator->onAfterSaveEntry($event);
+            }
+        );
+
     }
 
     /**
@@ -272,7 +304,31 @@ class Shortlink extends Plugin
             ],
             'shortlink:plugin-settings' => [
                 'label' => Craft::t('shortlink', 'Edit Plugin Settings'),
+            ],
+            'shortlink:entry-redirect' => [
+                'label' => Craft::t('shortlink', 'Allow redirect type on entries')
             ]
         ];
     }
+
+    /**
+     * @param Element $element
+     *
+     * @return string
+     */
+    protected function renderSidebar(Element $element): string
+    {
+        $user = Craft::$app->getUser();
+        return PluginTemplate::renderPluginTemplate(
+          '_sidebars/entry-shortlink.twig',
+          [
+              'currentSiteId' => $element->siteId ?? 0,
+              'showRedirectOption' => $user->checkPermission('shortlink:entry-redirect'),
+              'allowCustom' => self::$settings->allowCustom,
+              'redirectType' => self::$settings->redirectType,
+              'shortlink' => self::getInstance()->generator->generateShortlink(),
+          ]
+        );
+    }
+
 }

@@ -1,14 +1,19 @@
-{% import "_includes/forms" as forms %}
-
 {% do view.registerAssetBundle('percipiolondon\\shortlink\\assetbundles\\shortlink\\ShortlinkAsset') %}
+{%- set tagOptions = {
+    'depends': [
+        'percipiolondon\\shortlink\\assetbundles\\shortlink\\ShortlinkAsset'
+    ]
+} -%}
+{{- craft.shortlink.register('src/js/shortlink.ts', false, tagOptions, tagOptions) -}}
+{{- craft.shortlink.register('src/js/shortlink-field.ts', false, tagOptions, tagOptions) -}}
 
-{{ forms.textField({
-    label: "Shortlink"|t('shortlink'),
-    siteId: 1,
-    id: 'shortlink',
-    name: 'shortlink',
-    autocorrect: false,
-    autocapitalize: false,
-    value: 'shortlink-generated-thing',
-    placeholder: 'Generate shortlink'|t('app'),
-}) }}
+<div id="shortlink-generator">
+    <shortlink-field
+        :allow-custom="{{ allowCustom }}"
+        label="{{ 'Shortlink'|t('shortlink') }}"
+        redirectLabel="{{ 'Redirect Type'|t('shortlink') }}"
+        redirect-type="{{ redirectType }}"
+        shortlink="{{ shortlink }}"
+        :show-redirect-option="{{ showRedirectOption }}"
+    />
+</div>

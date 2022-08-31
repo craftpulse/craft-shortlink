@@ -8,7 +8,7 @@ use craft\behaviors\EnvAttributeParserBehavior;
 /**
  *
  * @author    percipiolondon
- * @package   Shortlink
+ * @package   ShortlinkElement
  * @since     1.0.0
  *
  */
@@ -25,7 +25,7 @@ class SettingsModel extends Model
     /**
      * @var string The public-facing name of the plugin
      */
-    public string $pluginName = 'Shortlink';
+    public string $pluginName = 'ShortlinkElement';
 
     /**
      * @var string
@@ -50,7 +50,7 @@ class SettingsModel extends Model
     /**
      * @var string
      */
-    public string $redirect = '301';
+    public string $redirectType = '301';
 
     /**
      * @var bool
@@ -74,7 +74,7 @@ class SettingsModel extends Model
         return [
             'parser' => [
                 'class' => EnvAttributeParserBehavior::class,
-                'attributes' => ['allowCustom', 'alphaNumeric', 'casing', 'minLength', 'maxLength'],
+                'attributes' => ['allowCustom', 'alphaNumeric', 'casing', 'maxLength', 'minLength'],
             ],
         ];
     }
@@ -85,11 +85,11 @@ class SettingsModel extends Model
     public function defineRules(): array
     {
         return [
-            [['alphaNumeric', 'redirectBehavior', 'casing', 'pluginName', 'redirect'], 'string'],
+            [['alphaNumeric', 'casing', 'pluginName', 'redirectBehavior', 'redirectType'], 'string'],
             ['maxLength', 'integer', 'min' => 6, 'max' => 20],
-            ['minLength', 'integer', 'min' => 6, 'max' => 10],
+            ['minLength', 'integer', 'min' => 4, 'max' => 10],
             [['allowCustom', 'redirectQueryString'], 'boolean'],
-            [['allowCustom', 'alphaNumeric', 'redirectBehavior', 'casing', 'maxLength', 'minLength', 'redirect', 'redirectQueryString'], 'required'],
+            [['allowCustom', 'alphaNumeric', 'casing', 'maxLength', 'minLength', 'redirectBehavior', 'redirectQueryString', 'redirectType'], 'required'],
         ];
     }
 }

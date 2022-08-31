@@ -11,7 +11,8 @@ export default ({ command }) => ({
         outDir: '../src/web/assets/dist',
         rollupOptions: {
             input: {
-                timeloop: '/src/js/shortlink.ts',
+                shortlink: '/src/js/shortlink.ts',
+                'shortlink-field': '/src/js/shortlink-field.ts',
             },
             output: {
                 sourcemap: true
@@ -34,7 +35,7 @@ export default ({ command }) => ({
     publicDir: '../src/web/assets/public',
     resolve: {
         alias: {
-            '@': '/src',
+            '~': '/src',
             vue: 'vue/dist/vue.esm-bundler.js',
         },
     },

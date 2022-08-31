@@ -1,14 +1,14 @@
 {# @var craft \craft\web\twig\variables\CraftVariable #}
 {#
 /**
- * Shortlink plugin for Craft CMS 4.x
+ * ShortlinkElement plugin for Craft CMS 4.x
  *
- * Shortlink shortlink-settings.twig
+ * ShortlinkElement shortlink-settings.twig
  *
  * @author    percipio.london
  * @copyright Copyright (c) 2022 Percipio Global Ltd.
  * @link      https://percipio.london
- * @package   Shortlink
+ * @package   ShortlinkElement
  * @since     1.0.0
  */
 #}
@@ -34,66 +34,74 @@
 
     <div id="general">
 
-    {{ forms.selectField({
-        label: 'Link generation characters'|t('shortlink'),
-        instructions: 'Select your link generation characters, possibilities are alpha, numeric, alpha-numeric'|t('shortlink'),
-        suggestEnvVars: true,
-        id: 'shortlink-alphaNumeric',
-        name: 'alphaNumeric',
-        value: settings.alphaNumeric,
-        options: {
-            'alpha': 'Alpha Only'|t('shortlink'),
-            'numeric': 'Numeric Only'|t('shortlink'),
-            'alphaNumeric': 'Alpha Numeric'|t('shortlink'),
-        },
-        required: true,
-    }) }}
+        {{ forms.selectField({
+            label: 'Link generation characters'|t('shortlink'),
+            instructions: 'Select your link generation characters, possibilities are alpha, numeric, alpha-numeric'|t('shortlink'),
+            suggestEnvVars: true,
+            id: 'shortlink-alphaNumeric',
+            name: 'alphaNumeric',
+            value: settings.alphaNumeric,
+            options: {
+                'alpha': 'Alpha Only'|t('shortlink'),
+                'numeric': 'Numeric Only'|t('shortlink'),
+                'alphaNumeric': 'Alpha Numeric'|t('shortlink'),
+            },
+            required: true,
+        }) }}
 
-    {{ forms.selectField({
-        label: 'Link generation casing'|t('shortlink'),
-        instructions: 'Select if you want lowercase, uppercase or a combination of both'|t('shortlink'),
-        suggestEnvVars: true,
-        id: 'shortlink-casing',
-        name: 'casing',
-        value: settings.casing,
-        options: {
-            'lowercase': 'Lowercase'|t('shortlink'),
-            'uppercase': 'Uppercase'|t('shortlink'),
-            'mixed': 'Mixed'|t('shortlink'),
-        },
-        required: true,
-    }) }}
+        {{ forms.selectField({
+            label: 'Link generation casing'|t('shortlink'),
+            instructions: 'Select if you want lowercase, uppercase or a combination of both'|t('shortlink'),
+            suggestEnvVars: true,
+            id: 'shortlink-casing',
+            name: 'casing',
+            value: settings.casing,
+            options: {
+                'lowercase': 'Lowercase'|t('shortlink'),
+                'uppercase': 'Uppercase'|t('shortlink'),
+                'mixed': 'Mixed'|t('shortlink'),
+            },
+            required: true,
+        }) }}
 
-    {{  forms.textField({
-        label: 'Minimum link Length'|t('shortlink'),
-        instructions: 'The minimum link of the generated link'|t('shortlink'),
-        suggestEnvVars: true,
-        id: 'shortlink-minlength',
-        name: 'minLength',
-        value: settings.minLength,
-        required: false,
-    }) }}
+        {{  forms.textField({
+            label: 'Minimum link Length'|t('shortlink'),
+            instructions: 'The minimum link of the generated link'|t('shortlink'),
+            suggestEnvVars: true,
+            id: 'shortlink-minlength',
+            name: 'minLength',
+            value: settings.minLength,
+            required: false,
+        }) }}
 
-    {{  forms.textField({
-        label: 'Maximum link Length'|t('shortlink'),
-        instructions: 'The maximum link of the generated link'|t('shortlink'),
-        suggestEnvVars: true,
-        id: 'shortlink-maxlength',
-        name: 'maxLength',
-        value: settings.maxLength,
-        required: false,
-    }) }}
+        {{  forms.textField({
+            label: 'Maximum link Length'|t('shortlink'),
+            instructions: 'The maximum link of the generated link'|t('shortlink'),
+            suggestEnvVars: true,
+            id: 'shortlink-maxlength',
+            name: 'maxLength',
+            value: settings.maxLength,
+            required: false,
+        }) }}
+
+        {{ forms.lightswitchField({
+            label: "Allow custom values?"|t('shortlink'),
+            instructions: 'Select this if you want to allow custom values to be entered as shortlink.',
+            id: 'shortlink-allow-custom',
+            name: 'allowCustom',
+            on: settings.allowCustom,
+        }) }}
 
     </div>
 
-    <div id="redirects">
+    <div id="redirects" class="hidden">
         {{ forms.selectField({
-            label: 'Default redirect behaviour'|t('shortlink'),
-            instructions: 'Choose the default redirect behaviour, permanent (301) or temporary (302)'|t('shortlink'),
+            label: 'Default redirect behavior'|t('shortlink'),
+            instructions: 'Choose the default redirect behavior, permanent (301) or temporary (302)'|t('shortlink'),
             suggestEnvVars: true,
             id: 'shortlink-redirect',
-            name: 'redirect',
-            value: settings.redirect,
+            name: 'redirectType',
+            value: settings.redirectType,
             options: {
                 '301': 'Permanent'|t('shortlink'),
                 '302': 'Temporary'|t('shortlink'),
@@ -110,11 +118,11 @@
         }) }}
 
         {{ forms.selectField({
-            label: 'Broken shortlink behaviour'|t('shortlink'),
+            label: 'Broken shortlink behavior'|t('shortlink'),
             instructions: 'If the shortlink doesn\'t exist or is deleted, select the behaviour.'|t('shortlink'),
             suggestEnvVars: true,
-            id: 'shortlink-redirect-behaviour',
-            name: 'redirectBehaviour',
+            id: 'shortlink-redirect-behavior',
+            name: 'redirectBehavior',
             value: settings.redirectBehavior,
             options: {
                 'homepage': 'Homepage'|t('shortlink'),

@@ -10,11 +10,12 @@ use percipiolondon\shortlink\Shortlink;
 
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 /**
  *
  * @author    percipiolondon
- * @package   Shortlink
+ * @package   ShortlinkElement
  * @since     1.0.0
  *
  */
@@ -64,15 +65,17 @@ class SettingsController extends Controller
         }
 
         $settings = [
-            'allowCustom' => Craft::$app->getRequest()->getBodyParam('allowCustom'),
+            'allowCustom' => Craft::$app->getRequest()->getBodyParam('allowCustom') === '1',
             'alphaNumeric' => Craft::$app->getRequest()->getBodyParam('alphaNumeric'),
             'redirectBehavior' => Craft::$app->getRequest()->getBodyParam('redirectBehavior'),
             'casing' => Craft::$app->getRequest()->getBodyParam('casing'),
-            'maxLength' => Craft::$app->getRequest()->getBodyParam('maxLength'),
-            'minLength' => Craft::$app->getRequest()->getBodyParam('minLength'),
-            'redirect' => Craft::$app->getRequest()->getBodyParam('redirect'),
-            'redirectQueryString' => Craft::$app->getRequest()->getBodyParam('redirectQueryString'),
+            'maxLength' => (int) Craft::$app->getRequest()->getBodyParam('maxLength'),
+            'minLength' => (int) Craft::$app->getRequest()->getBodyParam('minLength'),
+            'redirectType' => Craft::$app->getRequest()->getBodyParam('redirectType'),
+            'redirectQueryString' => Craft::$app->getRequest()->getBodyParam('redirectQueryString') === '1',
         ];
+
+        //Craft::dd($settings);
 
         if(!Craft::$app->getPlugins()->savePluginSettings($plugin, $settings)) {
             Craft::$app->getSession()->setError(Craft::t('app', "Couldn't save plugin settings."));

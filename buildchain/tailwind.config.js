@@ -18,8 +18,14 @@ module.exports = {
             ],
         }
     },
+    important: true,
     theme: {
         extend: {
+            colors: {
+              red: {
+                  craft: '#e5422b',
+              }
+            },
             minHeight: (theme) => ({
                 12: theme('height.12')
             })

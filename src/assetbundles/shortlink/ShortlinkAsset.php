@@ -8,7 +8,7 @@ use craft\web\assets\cp\CpAsset;
 /**
  *
  * @author    percipiolondon
- * @package   Shortlink
+ * @package   ShortlinkElement
  * @since     1.0.0
  *
  */
