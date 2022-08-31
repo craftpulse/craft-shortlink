@@ -326,7 +326,7 @@ class Shortlink extends Plugin
               'showRedirectOption' => $user->checkPermission('shortlink:entry-redirect'),
               'allowCustom' => self::$settings->allowCustom,
               'redirectType' => self::$settings->redirectType,
-              'shortlink' => self::getInstance()->generator->generateShortlink(),
+              'shortlink' => self::getInstance()->generator->getShortlink($element->id),
           ]
         );
     }
