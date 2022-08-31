@@ -90,6 +90,7 @@ class Install extends Migration
      */
     public function addForeignKeys(): void
     {
+        $this->addForeignKey(null, Table::ROUTES, 'id', \craft\db\Table::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::ROUTES, 'siteId', \craft\db\Table::SITES, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::ROUTES, 'ownerId', \craft\db\Table::ENTRIES, ['id'], 'CASCADE', 'CASCADE');
     }

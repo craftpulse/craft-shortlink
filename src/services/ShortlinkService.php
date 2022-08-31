@@ -9,6 +9,7 @@ use craft\errors\MissingComponentException;
 use craft\events\ModelEvent;
 
 use Exception;
+use percipiolondon\shortlink\records\ShortlinkRecord;
 use percipiolondon\shortlink\Shortlink;
 use percipiolondon\shortlink\models\ShortlinkModel;
 use percipiolondon\shortlink\elements\ShortlinkElement;
@@ -22,6 +23,17 @@ use yii\base\ExitException;
  */
 class ShortlinkService extends Component
 {
+    public function getShortLink(int $elementId): array|string|null
+    {
+        $shortlink = ShortlinkRecord::findOne(['ownerId' => $elementId]);
+
+        if (!is_null($shortlink)) {
+            return $shortlink->shortlinkUri;
+        }
+
+        return $this->generateShortlink();
+    }
+
     /**
      * @throws ExitException
      * @throws Exception
@@ -46,7 +58,7 @@ class ShortlinkService extends Component
             'redirectType' => Craft::$app->getRequest()->getBodyParam('shortlink-redirect-type'),
         ];
 
-        $this->saveShortlink($event->sender);
+        $this->saveShortlink($event->sender, $shortlink);
 
         //Craft::dd($request->getBodyParams());
     }
@@ -57,15 +69,15 @@ class ShortlinkService extends Component
      * @throws MissingComponentException
      * @throws \yii\base\Exception
      */
-    public function saveShortlink($entry = null): bool
+    public function saveShortlink($entry = null, array $post): bool
     {
         $session = Craft::$app->getSession();
 
         $shortlink = $this->_setShortlinkFromPost();
         $shortlink->ownerId = $entry->id;
-        $shortlink->shortlinkUri = null;
-        $shortlink->httpCode = null;
-        $shortlink->status = ShortlinkElement::STATUS_ACTIVE;
+        $shortlink->shortlinkUri = $post['shortlinkUri'] ?? null;
+        $shortlink->httpCode = $post['redirectType'] ?? null;
+//        $shortlink->status = ShortlinkElement::STATUS_ACTIVE;
 
         if (!Craft::$app->getElements()->saveElement($shortlink)) {
             $session->setError(Craft::t('shortlink', 'Could not save the shortlink.'));
