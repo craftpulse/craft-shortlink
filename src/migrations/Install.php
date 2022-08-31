@@ -57,7 +57,7 @@ class Install extends Migration
                 'uid' => $this->uid(),
                 // foreign keys
                 'siteId' => $this->integer(),
-                'ownerId' => $this->integer()->notNull(),
+                'ownerId' => $this->integer(),
                 // fields
                 'shortlinkUri' => $this->string(255)->notNull(),
                 'destination' => $this->string(255),
