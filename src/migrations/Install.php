@@ -64,7 +64,7 @@ class Install extends Migration
                 'httpCode' => $this->string()->notNull(),
                 'hitCount' => $this->integer()->defaultValue(0),
                 'lastUsed' => $this->dateTime(),
-                'status' => $this->enum('status', ['active', 'inactive']),
+                'status' => $this->enum('status', ['active', 'inactive'])->notNull(),
             ]);
 
             $tableRoutesCreated = true;
