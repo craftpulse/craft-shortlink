@@ -10,6 +10,7 @@ use craft\events\DefineHtmlEvent;
 use craft\events\ModelEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\services\Plugins;
 use craft\services\UserPermissions;
@@ -275,7 +276,10 @@ class Shortlink extends Plugin
             Entry::class,
             Entry::EVENT_AFTER_SAVE,
             function (ModelEvent $event) {
-                self::getInstance()->shortlinks->onAfterSaveEntry($event);
+                Craft::dd($event);
+                if(!ElementHelper::isDraftOrRevision($event->element)) {
+                    self::getInstance()->shortlinks->onAfterSaveEntry($event);
+                }
             }
         );
 

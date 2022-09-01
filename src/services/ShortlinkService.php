@@ -111,12 +111,12 @@ class ShortlinkService extends Component
     public function getShortlinkRedirect(string $path, $siteId = null): mixed
     {
         // strip the forward slash of our path
-        $path = $path;
+        $path = ltrim($path, '/');
         $query = (new Query)
             ->from('{{%shortlink_routes}}')
             ->where([
                     'and',
-                    ['shortlinkUri' => ltrim($path, '/')]
+                    ['shortlinkUri' => $path]
                 ])
             ->limit(1);
 

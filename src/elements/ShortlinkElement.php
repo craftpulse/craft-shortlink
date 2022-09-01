@@ -69,14 +69,14 @@ class ShortlinkElement extends Element
     protected static function defineTableAttributes(): array
     {
         return [
-            'id' => ['label' => Craft::t('workflow', 'Entry')],
-            'siteId' => ['label' => Craft::t('workflow', 'Site')],
-            'dateCreated' => ['label' => Craft::t('workflow', 'Date Created')],
-            'dateUpdated' => ['label' => Craft::t('workflow', 'Date Updated')],
-            'shortlinkUri' => ['label' => Craft::t('workflow', 'URI')],
-            'httpCode' => ['label' => Craft::t('workflow', 'HTTP Redirect Code')],
-            'hitCount' => ['label' => Craft::t('workflow', 'Hit Count')],
-            'lastUsed' => ['label' => Craft::t('workflow', 'Last Used')],
+            'id' => ['label' => Craft::t('shortlink', 'Entry')],
+            'siteId' => ['label' => Craft::t('shortlink', 'Site')],
+            'dateCreated' => ['label' => Craft::t('shortlink', 'Date Created')],
+            'dateUpdated' => ['label' => Craft::t('shortlink', 'Date Updated')],
+            'shortlinkUri' => ['label' => Craft::t('shortlink', 'URI')],
+            'httpCode' => ['label' => Craft::t('shortlink', 'HTTP Redirect Code')],
+            'hitCount' => ['label' => Craft::t('shortlink', 'Hit Count')],
+            'lastUsed' => ['label' => Craft::t('shortlink', 'Last Used')],
         ];
     }
 
@@ -94,10 +94,10 @@ class ShortlinkElement extends Element
     protected static function defineSortOptions(): array
     {
         return [
-            'id' => Craft::t('workflow', 'Entry'),
-            'dateCreated' => Craft::t('workflow', 'Date Created'),
-            'shortlinkUri' => Craft::t('workflow', 'URI'),
-            'httpCode' => Craft::t('workflow', 'HTTP Redirect Code'),
+            'id' => Craft::t('shortlink', 'Entry'),
+            'dateCreated' => Craft::t('shortlink', 'Date Created'),
+            'shortlinkUri' => Craft::t('shortlink', 'URI'),
+            'httpCode' => Craft::t('shortlink', 'HTTP Redirect Code'),
         ];
     }
 
