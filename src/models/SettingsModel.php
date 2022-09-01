@@ -8,7 +8,7 @@ use craft\behaviors\EnvAttributeParserBehavior;
 /**
  *
  * @author    percipiolondon
- * @package   ShortlinkElement
+ * @package   Shortlink
  * @since     1.0.0
  *
  */
@@ -25,7 +25,7 @@ class SettingsModel extends Model
     /**
      * @var string The public-facing name of the plugin
      */
-    public string $pluginName = 'ShortlinkElement';
+    public string $pluginName = 'Shortlink';
 
     /**
      * @var string

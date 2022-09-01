@@ -8,7 +8,7 @@ use nystudio107\pluginvite\variables\ViteVariableTrait;
 /**
  *
  * @author    percipiolondon
- * @package   ShortlinkElement
+ * @package   Shortlink
  * @since     1.0.0
  * @property VitePluginService  $vite
  * @property TimeloopService $timeloop

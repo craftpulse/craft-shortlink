@@ -8,7 +8,7 @@ use craft\web\assets\cp\CpAsset;
 /**
  *
  * @author    percipiolondon
- * @package   ShortlinkElement
+ * @package   Shortlink
  * @since     1.0.0
  *
  */
@@ -22,7 +22,7 @@ class ShortlinkAsset extends AssetBundle
      */
     public function init(): void
     {
-        $this->sourcePath = "@percipiolondon/timeloop/web/assets/dist";
+        $this->sourcePath = "@percipiolondon/shortlink/web/assets/dist";
 
         $this->depends = [
             CpAsset::class,

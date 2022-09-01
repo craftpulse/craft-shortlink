@@ -15,7 +15,7 @@ use yii\web\Response;
 /**
  *
  * @author    percipiolondon
- * @package   ShortlinkElement
+ * @package   Shortlink
  * @since     1.0.0
  *
  */

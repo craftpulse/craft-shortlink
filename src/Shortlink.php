@@ -22,17 +22,21 @@ use percipiolondon\shortlink\helpers\PluginTemplate;
 use percipiolondon\shortlink\models\SettingsModel as Settings;
 use percipiolondon\shortlink\services\ShortlinkService;
 use percipiolondon\shortlink\variables\ShortlinkVariable;
+use Twig\Error\LoaderError;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
 use yii\base\event;
 
 /**
-*
+ *
 * @author    percipiolondon
-* @package   ShortlinkElement
+* @package   Shortlink
 * @since     1.0.0
 *
 * @property ShortlinkService $shortlinkService
 * @property VitePluginService  $vite
 * @property Settings $settings
+* @property mixed|object|null $shortlinks
 *
 */
 
@@ -247,7 +251,7 @@ class Shortlink extends Plugin
                 );
                 // Register our custom permissions
                 $event->permissions[] = [
-                    'heading' => Craft::t('shortlink', 'ShortlinkElement'),
+                    'heading' => Craft::t('shortlink', 'Shortlink'),
                     'permissions' => $this->customAdminCpPermissions()
                 ];
             }
@@ -337,6 +341,9 @@ class Shortlink extends Plugin
      * @param Element $element
      *
      * @return string
+     * @throws LoaderError
+     * @throws RuntimeError
+     * @throws SyntaxError
      */
     protected function renderSidebar(Element $element): string
     {
