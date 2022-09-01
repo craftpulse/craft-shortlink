@@ -112,13 +112,10 @@ class ShortlinkElement extends Element
     public function afterSave(bool $isNew): void
     {
         try {
-            if (!$isNew) {
-                $record = ShortlinkRecord::findOne($this->id);
+            $record = ShortlinkRecord::findOne(['ownerId' => $this->ownerId]);
+            Craft::warning("SHORTLINK: fetching shortlink routes for owner ". $this->ownerId);
 
-                if ($record) {
-                    throw new Exception('Invalid shortlink ID: ' . $this->id);
-                }
-            } else {
+            if (!$record) {
                 $record = new ShortlinkRecord();
                 $record->id = $this->id;
             }
