@@ -277,7 +277,7 @@ class Shortlink extends Plugin
             function (ModelEvent $event) {
                 /** @var Entry $entry */
                 $entry = $event->sender;
-                self::getInstance()->shortlinks->onAfterSaveEntry($event);
+                self::getInstance()->shortlinks->onAfterSaveEntry($entry);
             }
         );
 

@@ -8,9 +8,9 @@ use craft\db\Query;
 use craft\elements\Entry;
 use craft\errors\ElementNotFoundException;
 use craft\errors\MissingComponentException;
-use craft\events\ModelEvent;
 use craft\helpers\UrlHelper;
 
+use Illuminate\Support\Collection;
 use percipiolondon\shortlink\records\ShortlinkRecord;
 use percipiolondon\shortlink\Shortlink;
 use percipiolondon\shortlink\models\ShortlinkModel;
@@ -47,7 +47,20 @@ class ShortlinkService extends Component
         $settings = Shortlink::$plugin->getSettings();
         $allowedChars = implode('', $this->_defineFormat($settings->casing, $settings->alphaNumeric));
         $length = random_int($settings->minLength, $settings->maxLength);
-        return $this->_generateUri($allowedChars, $length);
+        $shortlink = $this->_generateUri($allowedChars, $length);
+        $uris = $this->_fetchUris();
+
+        if ($uris->isEmpty()) {
+            return $shortlink;
+        } else {
+            do {
+                $shortlink = $this->_generateUri($allowedChars, $length);
+            } while ($uris->contains(function($element) use ($shortlink) {
+                return $element['shortlinkUri'] === $shortlink;
+            }));
+        }
+
+        return $shortlink;
     }
 
     /**
@@ -222,6 +235,14 @@ class ShortlinkService extends Component
         }
 
         return $uri;
+    }
+
+    private function _fetchUris(): Collection
+    {
+        $query = (new Query)
+            ->from('{{%shortlink_routes}}');
+
+        return $query->collect();
     }
 
     public function doRedirect(string $url, string $path, ?array $redirect): bool
