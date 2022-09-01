@@ -29,6 +29,8 @@ class ShortlinkService extends Component
 {
     public function getShortLink(int $elementId): array|string|null
     {
+
+        Craft::dd($elementId);
         $shortlink = ShortlinkRecord::findOne(['ownerId' => $elementId]);
 
         if (!is_null($shortlink)) {
@@ -126,7 +128,7 @@ class ShortlinkService extends Component
     /**
      * @throws ExitException
      */
-    public function onAfterSaveEntry(ModelEvent $event): void
+    public function onAfterSaveEntry(Entry $entry): void
     {
         $request = Craft::$app->getRequest();
 
@@ -135,7 +137,7 @@ class ShortlinkService extends Component
             'redirectType' => $request->getBodyParam('shortlink-redirect-type'),
         ];
 
-        $this->saveShortlink($event->sender, $shortlink);
+        $this->saveShortlink($entry, $shortlink);
     }
 
     /**

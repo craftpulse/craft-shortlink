@@ -10,7 +10,6 @@ use craft\events\DefineHtmlEvent;
 use craft\events\ModelEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
-use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\services\Plugins;
 use craft\services\UserPermissions;
@@ -278,9 +277,7 @@ class Shortlink extends Plugin
             function (ModelEvent $event) {
                 /** @var Entry $entry */
                 $entry = $event->sender;
-                if(!ElementHelper::isDraftOrRevision($entry)) {
-                    self::getInstance()->shortlinks->onAfterSaveEntry($event);
-                }
+                self::getInstance()->shortlinks->onAfterSaveEntry($event);
             }
         );
 
@@ -337,11 +334,11 @@ class Shortlink extends Plugin
     }
 
     /**
-     * @param Element $element
+     * @param Entry $entry
      *
      * @return string
      */
-    protected function renderSidebar(Element $element): string
+    protected function renderSidebar(Entry $entry): string
     {
         $user = Craft::$app->getUser();
         return PluginTemplate::renderPluginTemplate(
@@ -351,7 +348,7 @@ class Shortlink extends Plugin
               'showRedirectOption' => $user->checkPermission('shortlink:entry-redirect'),
               'allowCustom' => self::$settings->allowCustom,
               'redirectType' => self::$settings->redirectType,
-              'shortlink' => self::getInstance()->shortlinks->getShortlink($element->id),
+              'shortlink' => self::getInstance()->shortlinks->getShortlink($entry->id),
           ]
         );
     }
