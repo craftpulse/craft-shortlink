@@ -276,8 +276,9 @@ class Shortlink extends Plugin
             Entry::class,
             Entry::EVENT_AFTER_SAVE,
             function (ModelEvent $event) {
-                Craft::dd($event);
-                if(!ElementHelper::isDraftOrRevision($event->element)) {
+                /** @var Entry $entry */
+                $entry = $event->sender;
+                if(!ElementHelper::isDraftOrRevision($entry)) {
                     self::getInstance()->shortlinks->onAfterSaveEntry($event);
                 }
             }
