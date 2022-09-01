@@ -9,7 +9,7 @@ interface Props {
 }
 
 withDefaults(defineProps<Props>(), {
-    label: 'ShortlinkElement',
+    label: 'Shortlink',
     shortlink: '',
     redirectLabel: 'Redirect Type',
 })

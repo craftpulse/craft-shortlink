@@ -7,6 +7,7 @@ import path from 'path';
 export default ({ command }) => ({
     base: command === 'serve' ? '' : '/dist/',
     build: {
+        emptyOutDir: true,
         manifest: true,
         outDir: '../src/web/assets/dist',
         rollupOptions: {
@@ -35,12 +36,17 @@ export default ({ command }) => ({
     publicDir: '../src/web/assets/public',
     resolve: {
         alias: {
-            '~': '/src',
+            '~': path.resolve(__dirname, './src'),
             vue: 'vue/dist/vue.esm-bundler.js',
         },
+        preserveSymlinks: true,
     },
     server: {
+        fs: {
+            strict: false
+        },
         host: '0.0.0.0',
+        origin: 'http://localhost:3751',
         port: 3751,
         strictPort: true,
     }
