@@ -334,22 +334,22 @@ class Shortlink extends Plugin
     }
 
     /**
-     * @param Entry $entry
+     * @param Element $element
      *
      * @return string
      */
-    protected function renderSidebar(Entry $entry): string
+    protected function renderSidebar(Element $element): string
     {
         $user = Craft::$app->getUser();
         return PluginTemplate::renderPluginTemplate(
-          '_sidebars/entry-shortlink.twig',
-          [
-              'currentSiteId' => $element->siteId ?? 0,
-              'showRedirectOption' => $user->checkPermission('shortlink:entry-redirect'),
-              'allowCustom' => self::$settings->allowCustom,
-              'redirectType' => self::$settings->redirectType,
-              'shortlink' => self::getInstance()->shortlinks->getShortlink($entry->id),
-          ]
+            '_sidebars/entry-shortlink.twig',
+            [
+                'currentSiteId' => $element->siteId ?? 0,
+                'showRedirectOption' => $user->checkPermission('shortlink:entry-redirect'),
+                'allowCustom' => self::$settings->allowCustom,
+                'redirectType' => self::$settings->redirectType,
+                'shortlink' => self::getInstance()->shortlinks->getShortlink($element),
+            ]
         );
     }
 
