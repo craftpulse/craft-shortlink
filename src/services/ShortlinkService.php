@@ -101,7 +101,7 @@ class ShortlinkService extends Component
                 $this->doRedirect($url, $path, $redirect);
             }
         }
-        Craft::dd($path);
+        Craft::dd('the-path');
     }
 
     /**
@@ -131,6 +131,7 @@ class ShortlinkService extends Component
                     'and',
                     ['shortlinkUri' => $path]
                 ])
+            ->andWhere(['not', ['ownerId' => null]])
             ->limit(1);
 
         return $query->one();
@@ -261,9 +262,10 @@ class ShortlinkService extends Component
             if($siteId !== null) {
                 $siteId = (int)$siteId;
             }
-            Craft::dd($redirect);
             Craft::dd(UrlHelper::siteUrl($ownerUrl->uri, null, null, $siteId));
         }
+
+        // add query string redirects in here
 
         return false;
     }
