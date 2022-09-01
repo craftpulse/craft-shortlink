@@ -11,6 +11,7 @@ use craft\events\ModelEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\helpers\UrlHelper;
+use craft\services\Plugins;
 use craft\services\UserPermissions;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
@@ -90,7 +91,7 @@ class Shortlink extends Plugin
     {
         $config['components'] = [
             'shortlink' => __CLASS__,
-            'generator' => ShortlinkService::class,
+            'shortlinks' => ShortlinkService::class,
             'vite' => [
                 'class' => VitePluginService::class,
                 'assetClass' => ShortlinkAsset::class,
@@ -122,6 +123,9 @@ class Shortlink extends Plugin
 
         // Install event listeners
         $this->installEventListeners();
+
+        // Install global listeners
+        $this->installGlobalEventListeners();
 
         // Register variables
         Event::on(
@@ -271,10 +275,26 @@ class Shortlink extends Plugin
             Entry::class,
             Entry::EVENT_AFTER_SAVE,
             function (ModelEvent $event) {
-                self::getInstance()->generator->onAfterSaveEntry($event);
+                self::getInstance()->shortlinks->onAfterSaveEntry($event);
             }
         );
 
+    }
+
+    protected function installGlobalEventListeners(): void
+    {
+        Event::on(
+            Plugins::class,
+            Plugins::EVENT_AFTER_LOAD_PLUGINS,
+            function() {
+                // only use this after all plugins are loaded
+                $request = Craft::$app->getRequest();
+                // Only non-console site requests
+                if ($request->getIsSiteRequest() && !$request->getIsConsoleRequest()) {
+                    Shortlink::$plugin->shortlinks->handleRedirect();
+                }
+            }
+        );
     }
 
     /**
@@ -326,7 +346,7 @@ class Shortlink extends Plugin
               'showRedirectOption' => $user->checkPermission('shortlink:entry-redirect'),
               'allowCustom' => self::$settings->allowCustom,
               'redirectType' => self::$settings->redirectType,
-              'shortlink' => self::getInstance()->generator->getShortlink($element->id),
+              'shortlink' => self::getInstance()->shortlinks->getShortlink($element->id),
           ]
         );
     }

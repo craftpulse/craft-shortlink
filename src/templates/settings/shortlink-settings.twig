@@ -22,8 +22,18 @@
 
 {% set tabs = {
     general: { label: 'General Settings'|t('shortlink'), url: '#general' },
+    generation: { label: 'Generate Settings'|t('shortlink'), url: '#generation' },
     redirects: { label: 'Redirect Settings'|t('shortlink'), url: '#redirects' },
 } %}
+
+{% set docs = 'https://percipio.london/plugins/shortlink' %}
+{% set siteColumn = [] %}
+
+{% block actionButton %}
+
+    <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+
+{% endblock %}
 
 {% block content %}
 
@@ -34,6 +44,40 @@
 
     <div id="general">
 
+        <div class="flex">
+            <div class="flex-grow">
+                {% set cols = siteColumn|merge({
+                    uriPattern: {
+                        type: 'singleline',
+                        heading: 'Shortlink URL'|t('shortlink'),
+                        placeholder: "Enter your shortlink site url."|t('shortlink'),
+                        code: true,
+                        info: 'The shortlink URL that can be used to redirect to your entries.',
+                    }
+                }) %}
+
+                <input type="hidden" name="shortlinkUrls" value="" />
+                {% set info %}
+                    {{ 'Add your owned shortlink urls.'|t('shortlink') }}
+                {% endset %}
+                {{ forms.editableTableField({
+                    label: "URLs"|t('shortlink'),
+                    instructions: "The shortlink URLs."|t('shortlink'),
+                    name: 'shortlinkUrls',
+                    id: 'shortlink-urls',
+                    cols: cols,
+                    rows: settings.shortlinkUrls,
+                    addRowLabel: "Add a shortlink URL"|t('shortlink'),
+                    allowAdd: true,
+                    allowDelete: true,
+                    allowReorder: true,
+                }) }}
+            </div>
+        </div>
+
+    </div>
+
+    <div id="generation" class="hidden">
         {{ forms.selectField({
             label: 'Link generation characters'|t('shortlink'),
             instructions: 'Select your link generation characters, possibilities are alpha, numeric, alpha-numeric'|t('shortlink'),
@@ -91,7 +135,6 @@
             name: 'allowCustom',
             on: settings.allowCustom,
         }) }}
-
     </div>
 
     <div id="redirects" class="hidden">

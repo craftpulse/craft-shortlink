@@ -53,6 +53,11 @@ class SettingsModel extends Model
     public string $redirectType = '301';
 
     /**
+     * @var array
+     */
+    public array $shortlinkUrls = [];
+
+    /**
      * @var bool
      */
     public bool $redirectQueryString = false;

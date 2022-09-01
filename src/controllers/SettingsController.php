@@ -73,9 +73,8 @@ class SettingsController extends Controller
             'minLength' => (int) Craft::$app->getRequest()->getBodyParam('minLength'),
             'redirectType' => Craft::$app->getRequest()->getBodyParam('redirectType'),
             'redirectQueryString' => Craft::$app->getRequest()->getBodyParam('redirectQueryString') === '1',
+            'shortlinkUrls' => Craft::$app->getRequest()->getBodyParam('shortlinkUrls'),
         ];
-
-        //Craft::dd($settings);
 
         if(!Craft::$app->getPlugins()->savePluginSettings($plugin, $settings)) {
             Craft::$app->getSession()->setError(Craft::t('app', "Couldn't save plugin settings."));

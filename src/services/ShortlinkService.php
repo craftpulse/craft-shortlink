@@ -4,21 +4,25 @@ namespace percipiolondon\shortlink\services;
 
 use Craft;
 use craft\base\Component;
+use craft\db\Query;
+use craft\elements\Entry;
 use craft\errors\ElementNotFoundException;
 use craft\errors\MissingComponentException;
 use craft\events\ModelEvent;
+use craft\helpers\UrlHelper;
 
-use Exception;
 use percipiolondon\shortlink\records\ShortlinkRecord;
 use percipiolondon\shortlink\Shortlink;
 use percipiolondon\shortlink\models\ShortlinkModel;
 use percipiolondon\shortlink\elements\ShortlinkElement;
+
+use Exception;
 use Throwable;
 use yii\base\ExitException;
 
 /**
  * @author    percipiolondon
- * @package   Timeloop
+ * @package   Shortlink
  * @since     4.0.0
  */
 class ShortlinkService extends Component
@@ -47,6 +51,79 @@ class ShortlinkService extends Component
     }
 
     /**
+     * Handle shortlink redirects
+     */
+    public function handleRedirect(): void
+    {
+        $request = Craft::$app->getRequest();
+        // Only handle site requests, no live previews or console requests
+        if ($request->getIsSiteRequest() && !$request->getIsLivePreview() && !$request->getIsConsoleRequest()) {
+                $host = urldecode($request->getHostInfo());
+                $path = urldecode($request->getUrl());
+                $url = urldecode($request->getAbsoluteUrl());
+
+            $baseUrls = [];
+            $sites = Craft::$app->getSites()->allSites;
+
+            // host returns including trailing slash, make sure we check for that too if it's not site in the SITE_URL
+            $needle = [
+                $host,
+                $host . '/',
+            ];
+            // add all baseUrls to an array in case of multisite
+            foreach($sites as $site) {
+                $baseUrls[] = $site->baseUrl;
+            }
+
+            // check if our hostname is one of the existing Craft sites, if so don't try to redirect
+            if(array_intersect($needle, $baseUrls)) {
+                // check if query string should be stripped or not
+                if (!Shortlink::$settings->redirectQueryString) {
+                    $path = UrlHelper::stripQueryString($path);
+                    $url = UrlHelper::stripQueryString($url);
+                }
+
+                // Redirect if we find a match, otherwise let Craft handle it
+                $redirect = $this->findShortlinkMatch($path);
+                $this->doRedirect($url, $path, $redirect);
+            }
+        }
+        Craft::dd($path);
+    }
+
+    /**
+     * @param string $path
+     * @param null $siteId
+     *
+     * @return array|null
+     */
+    public function findShortlinkMatch(string $path, $siteId = null): ?array
+    {
+        // Need to add multisite functionality
+        return $this->getShortlinkRedirect($path, $siteId);
+    }
+
+    /**
+     * @param string $path
+     * @param $siteId
+     * @return mixed|null
+     */
+    public function getShortlinkRedirect(string $path, $siteId = null): mixed
+    {
+        // strip the forward slash of our path
+        $path = $path;
+        $query = (new Query)
+            ->from('{{%shortlink_routes}}')
+            ->where([
+                    'and',
+                    ['shortlinkUri' => ltrim($path, '/')]
+                ])
+            ->limit(1);
+
+        return $query->one();
+    }
+
+    /**
      * @throws ExitException
      */
     public function onAfterSaveEntry(ModelEvent $event): void
@@ -59,8 +136,6 @@ class ShortlinkService extends Component
         ];
 
         $this->saveShortlink($event->sender, $shortlink);
-
-        //Craft::dd($request->getBodyParams());
     }
 
     /**
@@ -147,5 +222,16 @@ class ShortlinkService extends Component
         }
 
         return $uri;
+    }
+
+    public function doRedirect(string $url, string $path, ?array $redirect): bool
+    {
+        $response = Craft::$app->getResponse();
+        if ($redirect !== null) {
+            $ownerUrl = Entry::find()->id($redirect['ownerId'])->one();
+            Craft::dd($ownerUrl->uri);
+        }
+
+        return false;
     }
 }
