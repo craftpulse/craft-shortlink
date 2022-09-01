@@ -9,11 +9,11 @@
 
 <div id="shortlink-generator">
     <shortlink-field
-        :allow-custom="{{ allowCustom }}"
+        :allow-custom="{{ allowCustom ? 'true' : 'false' }}"
         label="{{ 'Shortlink'|t('shortlink') }}"
         redirectLabel="{{ 'Redirect Type'|t('shortlink') }}"
         redirect-type="{{ redirectType }}"
         shortlink="{{ shortlink }}"
-        :show-redirect-option="{{ showRedirectOption }}"
+        :show-redirect-option="{{ showRedirectOption ? 'true' : 'false' }}"
     />
 </div>
