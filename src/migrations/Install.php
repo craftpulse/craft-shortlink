@@ -80,7 +80,7 @@ class Install extends Migration
     {
         $this->createIndex(null, Table::ROUTES, 'siteId', false);
         $this->createIndex(null, Table::ROUTES, 'ownerId', false);
-        $this->createIndex(null, Table::ROUTES, 'shortlinkUri', true);
+        $this->createIndex(null, Table::ROUTES, 'shortlinkUri', false);
         $this->createIndex(null, Table::ROUTES, 'destination', false);
 
     }
@@ -92,7 +92,7 @@ class Install extends Migration
     {
         $this->addForeignKey(null, Table::ROUTES, 'id', \craft\db\Table::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::ROUTES, 'siteId', \craft\db\Table::SITES, ['id'], 'CASCADE', 'CASCADE');
-        $this->addForeignKey(null, Table::ROUTES, 'ownerId', \craft\db\Table::ENTRIES, ['id'], 'CASCADE', 'CASCADE');
+        $this->addForeignKey(null, Table::ROUTES, 'ownerId', \craft\db\Table::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
     }
 
     /**

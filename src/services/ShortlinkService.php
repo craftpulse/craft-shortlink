@@ -27,11 +27,9 @@ use yii\base\ExitException;
  */
 class ShortlinkService extends Component
 {
-    public function getShortLink(int $elementId): array|string|null
+    public function getShortLink(Entry $element): array|string|null
     {
-
-        Craft::dd($elementId);
-        $shortlink = ShortlinkRecord::findOne(['ownerId' => $elementId]);
+        $shortlink = ShortlinkRecord::findOne(['ownerId' => $element->id]);
 
         if (!is_null($shortlink)) {
             return $shortlink->shortlinkUri;
