@@ -97,16 +97,16 @@ class ShortlinkQuery extends ElementQuery
     // Protected Methods
     // =========================================================================
 
-//    protected function statusCondition(string $status): mixed
-//    {
-//        return match ($status) {
-//            ShortlinkElement::STATUS_ACTIVE => [
-//                'shortlink_routes.status' => ShortlinkElement::STATUS_ACTIVE,
-//            ],
-//            ShortlinkElement::STATUS_INACTIVE => [
-//                'shortlink_routes.status' => ShortlinkElement::STATUS_INACTIVE,
-//            ],
-//            default => parent::statusCondition($status),
-//        };
-//    }
+    protected function statusCondition(string $status): mixed
+    {
+        return match ($status) {
+            ShortlinkElement::STATUS_ACTIVE => [
+                'shortlink_routes.status' => ShortlinkElement::STATUS_ACTIVE,
+            ],
+            ShortlinkElement::STATUS_INACTIVE => [
+                'shortlink_routes.status' => ShortlinkElement::STATUS_INACTIVE,
+            ],
+            default => parent::statusCondition($status),
+        };
+    }
 }

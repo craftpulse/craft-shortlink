@@ -47,7 +47,7 @@ class ShortlinkElement extends Element
      */
     public static function hasStatuses(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -127,7 +127,7 @@ class ShortlinkElement extends Element
             $record->httpCode = $this->httpCode;
             $record->hitCount = $this->hitCount;
             $record->lastUsed = $this->lastUsed;
-            $record->status = $this->status;
+            $record->shortlinkStatus = $this->shortlinkStatus;
 
             $record->save();
         } catch (Exception $e) {

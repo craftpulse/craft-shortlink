@@ -29,7 +29,7 @@ class ShortlinkService extends Component
 {
     public function getShortLink(Entry $element): array|string|null
     {
-        $shortlink = ShortlinkRecord::findOne(['ownerId' => $element->id]);
+        $shortlink = ShortlinkElement::findOne(['ownerId' => $element->id]);
 
         if (!is_null($shortlink)) {
             return $shortlink->shortlinkUri;
