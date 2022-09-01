@@ -6,6 +6,7 @@ use craft\db\ActiveQuery;
 use craft\db\ActiveRecord;
 use craft\records\Element;
 use craft\records\Entry;
+use DateTime;
 use percipiolondon\shortlink\db\Table;
 
 /**
@@ -15,12 +16,13 @@ use percipiolondon\shortlink\db\Table;
  * @property integer $id
  * @property integer $siteId
  * @property integer $ownerId
+ * @property integer $ownerRevisionId
  * @property string $shortlinkUri
  * @property string $destination
  * @property string $httpCode
  * @property integer $hitCount
- * @property \DateTime $lastUsed
- * @property string $status
+ * @property DateTime $lastUsed
+ * @property string $shortlinkStatus
  *
  */
 

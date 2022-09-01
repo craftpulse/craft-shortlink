@@ -23,6 +23,7 @@ class ShortlinkElement extends Element
     // =========================================================================
 
     public ?int $ownerId = null;
+    public ?int $ownerRevisionId = null;
     public ?string $shortlinkUri = null;
     public ?string $destination = null;
     public ?string $httpCode = null;
@@ -122,6 +123,7 @@ class ShortlinkElement extends Element
 
             $record->siteId = Craft::$app->getSites()->currentSite->id;
             $record->ownerId = $this->ownerId;
+            $record->ownerRevisionId = $this->ownerRevisionId;
             $record->shortlinkUri = $this->shortlinkUri;
             $record->destination = $this->destination ?? null;
             $record->httpCode = $this->httpCode;

@@ -8,10 +8,10 @@ use craft\db\Query;
 use craft\elements\Entry;
 use craft\errors\ElementNotFoundException;
 use craft\errors\MissingComponentException;
+use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 
 use Illuminate\Support\Collection;
-use percipiolondon\shortlink\records\ShortlinkRecord;
 use percipiolondon\shortlink\Shortlink;
 use percipiolondon\shortlink\models\ShortlinkModel;
 use percipiolondon\shortlink\elements\ShortlinkElement;
@@ -162,10 +162,17 @@ class ShortlinkService extends Component
         $session = Craft::$app->getSession();
 
         $shortlink = $this->_setShortlinkFromPost();
-        $shortlink->ownerId = $entry->id;
         $shortlink->shortlinkUri = $post['shortlinkUri'] ?? null;
         $shortlink->httpCode = $post['redirectType'] ?? null;
         $shortlink->shortlinkStatus = ShortlinkElement::STATUS_ACTIVE;
+
+        if(!ElementHelper::isDraftOrRevision($entry)) {
+            $shortlink->ownerId = $entry->id;
+            $shortlink->ownerRevisionId = null;
+        } else {
+            $shortlink->ownerId = null;
+            $shortlink->ownerRevisionId = $entry->id;
+        }
 
         if (!Craft::$app->getElements()->saveElement($shortlink)) {
             $session->setError(Craft::t('shortlink', 'Could not save the shortlink.'));
@@ -250,7 +257,12 @@ class ShortlinkService extends Component
         $response = Craft::$app->getResponse();
         if ($redirect !== null) {
             $ownerUrl = Entry::find()->id($redirect['ownerId'])->one();
-            Craft::dd($ownerUrl->uri);
+            $siteId = $redirect['siteId'] ?? null;
+            if($siteId !== null) {
+                $siteId = (int)$siteId;
+            }
+            Craft::dd($redirect);
+            Craft::dd(UrlHelper::siteUrl($ownerUrl->uri, null, null, $siteId));
         }
 
         return false;
