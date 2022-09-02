@@ -192,6 +192,12 @@ class Shortlink extends Plugin
                 'url' => 'shortlink/dashboard',
             ];
         }
+        if ($currentUser->can('shortlink:custom-shortlinks')) {
+            $subNavs['custom-shortlinks'] = [
+                'label' => Craft::t('shortlink', 'Custom Shortlinks'),
+                'url' => 'shortlink/custom-shortlinks',
+            ];
+        }
 
         $editableSettings = true;
         // check against allowAdminChanges
@@ -313,6 +319,8 @@ class Shortlink extends Plugin
         return [
             'shortlink' => 'shortlink/settings/dashboard',
             'shortlink/dashboard' => 'shortlink/settings/dashboard',
+            'shortlink/custom-shortlinks' => 'shortlink/settings/custom-shortlinks',
+            'shortlink/custom-shortlinks/add' => 'shortlink/settings/custom-shortlinks-add',
             'shortlink/plugin' => 'shortlink/settings/plugin',
         ];
     }
@@ -327,6 +335,9 @@ class Shortlink extends Plugin
         return [
             'shortlink:dashboard' => [
                 'label' => Craft::t('shortlink', 'Dashboard'),
+            ],
+            'shortlink:custom-shortlinks' => [
+                'label' => Craft::t('shortlink', 'Custom Shortlinks'),
             ],
             'shortlink:plugin-settings' => [
                 'label' => Craft::t('shortlink', 'Edit Plugin Settings'),

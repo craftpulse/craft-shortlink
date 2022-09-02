@@ -1,1 +1,11 @@
-{%- redirect cpUrl() ~ '/shortlink/plugin' -%}
+{%- requirePermission "shortlink:dashboard" -%}
+
+{%- extends '_layouts/cp.twig' -%}
+
+{%- set content -%}
+
+    <h2>About Shortlink</h2>
+
+    <p>Shortlink is a plugin to provide short handed URLs for easy sharing. This plugin will redirect the short link to the actual page.</p>
+
+{%- endset -%}
