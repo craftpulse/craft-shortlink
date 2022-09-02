@@ -9,6 +9,7 @@ use DateTime;
 
 use Exception;
 use percipiolondon\shortlink\elements\db\ShortlinkQuery;
+use percipiolondon\shortlink\helpers\UrlHelper;
 use percipiolondon\shortlink\records\ShortlinkRecord;
 
 class ShortlinkElement extends Element
@@ -124,7 +125,7 @@ class ShortlinkElement extends Element
             $record->siteId = Craft::$app->getSites()->currentSite->id;
             $record->ownerId = $this->ownerId;
             $record->ownerRevisionId = $this->ownerRevisionId;
-            $record->shortlinkUri = $this->shortlinkUri;
+            $record->shortlinkUri = UrlHelper::sanitizeUrl($this->shortlinkUri);
             $record->destination = $this->destination ?? null;
             $record->httpCode = $this->httpCode;
             $record->hitCount = $this->hitCount;

@@ -321,6 +321,7 @@ class Shortlink extends Plugin
             'shortlink/dashboard' => 'shortlink/settings/dashboard',
             'shortlink/custom-shortlinks' => 'shortlink/settings/custom-shortlinks',
             'shortlink/custom-shortlinks/add' => 'shortlink/settings/custom-shortlinks-add',
+            'shortlink/custom-shortlinks/edit/<shortlinkId:\d+>' => 'shortlink/settings/custom-shortlinks-edit',
             'shortlink/plugin' => 'shortlink/settings/plugin',
         ];
     }

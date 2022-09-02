@@ -99,6 +99,28 @@ class SettingsController extends Controller
         return $this->renderTemplate('shortlink/custom-shortlinks/form', $variables);
     }
 
+    public function actionCustomShortlinksEdit(int $shortlinkId): Response
+    {
+        $variables = [];
+        $pluginName = Shortlink::$settings->pluginName;
+        $templateTitle = Craft::t('shortlink', 'Custom Shortlinks');
+        $shortlink = ShortlinkElement::findOne($shortlinkId);
+
+        if (is_null($shortlink)) {
+            throw new NotFoundHttpException(Craft::t('shortlink', 'Shortlink does not exist'));
+        }
+
+        $variables['fullPageForm'] = true;
+        $variables['pluginName'] = $pluginName;
+        $variables['title'] = $templateTitle;
+        $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
+        $variables['selectedSubnavItem'] = 'custom-shortlinks';
+        $variables['shortlink'] = $shortlink;
+
+        // Render the template
+        return $this->renderTemplate('shortlink/custom-shortlinks/form', $variables);
+    }
+
     public function actionCustomShortlinksSave(): Response
     {
         $this->requireLogin();
