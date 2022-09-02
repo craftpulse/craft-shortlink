@@ -99,7 +99,7 @@ class ShortlinkService extends Component
 
             // check if our hostname is not one of the existing Craft sites, if so redirect
             // TODO add !array_intersect
-            if(!array_intersect($needle, $baseUrls)) {
+            if(array_intersect($needle, $baseUrls)) {
                 // check if query string should be stripped or not
                 if (!Shortlink::$settings->redirectQueryString) {
                     $path = UrlHelper::stripQueryString($path);
@@ -128,6 +128,11 @@ class ShortlinkService extends Component
         if(!$redirect) {
             $redirect = $this->getShortlinkRedirect(UrlHelper::stripQueryString($path), $siteId);
         }
+        // Retry again by fetching the static redirects
+        if(!$redirect) {
+            $redirect = $this->getStaticShortlinkRedirect(UrlHelper::stripQueryString($path), $siteId);
+        }
+
         return $redirect;
     }
 
@@ -143,10 +148,32 @@ class ShortlinkService extends Component
         $query = (new Query)
             ->from('{{%shortlink_routes}}')
             ->where([
-                    'and',
-                    ['shortlinkUri' => $path]
-                ])
+                'and',
+                ['shortlinkUri' => $path]
+            ])
             ->andWhere(['not', ['ownerId' => null]])
+            ->limit(1);
+
+        return $query->one();
+    }
+
+    /**
+     * @param string $path
+     * @param null $siteId
+     * @return mixed
+     */
+    public function getStaticShortlinkRedirect(string $path, $siteId = null): mixed
+    {
+        // strip the forward slash of our path
+        $path = ltrim($path, '/');
+        $query = (new Query)
+            ->from('{{%shortlink_routes}}')
+            ->where([
+                'and',
+                ['shortlinkUri' => $path],
+                ['ownerId' => null],
+                ['ownerRevisionId' => null]
+            ])
             ->limit(1);
 
         return $query->one();
@@ -279,13 +306,20 @@ class ShortlinkService extends Component
     {
         $response = Craft::$app->getResponse();
         if ($redirect !== null) {
-            $ownerUrl = Entry::find()->id($redirect['ownerId'])->one();
-            $siteId = $redirect['siteId'] ?? null;
-            if($siteId !== null) {
-                $siteId = (int)$siteId;
+            // check if destination is full url or path, if path use siteUrl UrlHelper and find the attached entry, else use link as is.
+
+            if(!$redirect['destination']) {
+                $ownerUrl = Entry::find()->id($redirect['ownerId'])->one();
+                $siteId = $redirect['siteId'] ?? null;
+                if($siteId !== null) {
+                    $siteId = (int)$siteId;
+                }
+
+                $destination = UrlHelper::siteUrl($ownerUrl->uri, null, null, $siteId);
+            } else {
+                $destination = UrlHelper::isAbsoluteUrl($redirect['destination']) ? $redirect['destination'] : UrlHelper::siteUrl($redirect['destination'], null, null, $siteId);
             }
 
-            $destination = UrlHelper::siteUrl($ownerUrl->uri, null, null, $siteId);
             $httpCode = $redirect['httpCode'];
 
             // add query string redirects in here
