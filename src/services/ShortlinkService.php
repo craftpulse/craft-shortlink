@@ -9,16 +9,18 @@ use craft\elements\Entry;
 use craft\errors\ElementNotFoundException;
 use craft\errors\MissingComponentException;
 use craft\helpers\ElementHelper;
-use craft\helpers\UrlHelper;
+
 
 use Illuminate\Support\Collection;
 use percipiolondon\shortlink\Shortlink;
+use percipiolondon\shortlink\helpers\UrlHelper;
 use percipiolondon\shortlink\models\ShortlinkModel;
 use percipiolondon\shortlink\elements\ShortlinkElement;
 
 use Exception;
 use Throwable;
 use yii\base\ExitException;
+use yii\base\InvalidConfigException;
 
 /**
  * @author    percipiolondon
@@ -113,7 +115,13 @@ class ShortlinkService extends Component
     public function findShortlinkMatch(string $path, $siteId = null): ?array
     {
         // Need to add multisite functionality
-        return $this->getShortlinkRedirect($path, $siteId);
+        // needs to search with queryString if nothing returned try without query string
+        $redirect = $this->getShortlinkRedirect($path, $siteId);
+        // Retry again without QueryString attached if result is null;
+        if(!$redirect) {
+            $redirect = $this->getShortlinkRedirect(UrlHelper::stripQueryString($path), $siteId);
+        }
+        return $redirect;
     }
 
     /**
@@ -253,6 +261,9 @@ class ShortlinkService extends Component
         return $query->collect();
     }
 
+    /**
+     * @throws InvalidConfigException
+     */
     public function doRedirect(string $url, string $path, ?array $redirect): bool
     {
         $response = Craft::$app->getResponse();
@@ -262,10 +273,29 @@ class ShortlinkService extends Component
             if($siteId !== null) {
                 $siteId = (int)$siteId;
             }
-            Craft::dd(UrlHelper::siteUrl($ownerUrl->uri, null, null, $siteId));
-        }
 
-        // add query string redirects in here
+            $destination = UrlHelper::siteUrl($ownerUrl->uri, null, null, $siteId);
+            $httpCode = $redirect['httpCode'];
+
+            // add query string redirects in here
+            if (Shortlink::$settings->redirectQueryString) {
+                $request = Craft::$app->getRequest();
+                $queryString = UrlHelper::combineQueryStringsFromUrls($destination, $request->getUrl());
+                if(!empty($queryString)) {
+                    $destination = strtok($destination, '?') . '?' . $queryString;
+                }
+            }
+
+            // Increment the statistics
+            // Shortlink::$plugin->statistics->incrementStatistics($redirect['shortlinkUri'], true);
+
+            $response->redirect($destination, $httpCode)->send();
+            try {
+                Craft::$app->end();
+            } catch (ExitException $e) {
+                Craft::error($e->getMessage(), __METHOD__);
+            }
+        }
 
         return false;
     }
