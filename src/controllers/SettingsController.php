@@ -121,6 +121,23 @@ class SettingsController extends Controller
         return $this->renderTemplate('shortlink/custom-shortlinks/form', $variables);
     }
 
+    public function actionCustomShortlinksDelete(int $shortlinkId): Response
+    {
+        $shortlink = ShortlinkElement::findOne($shortlinkId);
+
+        if (is_null($shortlink)) {
+            throw new NotFoundHttpException(Craft::t('shortlink', 'Shortlink does not exist'));
+        }
+
+        $success = Craft::$app->getElements()->deleteElement($shortlink);
+
+        if (!$success) {
+            throw new NotFoundHttpException(Craft::t('shortlink', 'Shortlink cannot be deleted'));
+        }
+
+        return $this->redirect('/admin/shortlink/custom-shortlinks');
+    }
+
     public function actionCustomShortlinksSave(): Response
     {
         $this->requireLogin();
