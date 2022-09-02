@@ -22,7 +22,6 @@ use Throwable;
 use yii\base\ExitException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
-use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 
 /**
@@ -32,6 +31,9 @@ use yii\web\NotFoundHttpException;
  */
 class ShortlinkService extends Component
 {
+    /**
+     * @throws ExitException
+     */
     public function getShortLink(Entry $element): array|string|null
     {
         $shortlink = ShortlinkElement::findOne(['ownerId' => $element->id]);
@@ -70,6 +72,8 @@ class ShortlinkService extends Component
 
     /**
      * Handle shortlink redirects
+     *
+     * @throws InvalidConfigException|Exception
      */
     public function handleRedirect(): void
     {
@@ -95,7 +99,7 @@ class ShortlinkService extends Component
 
             // check if our hostname is not one of the existing Craft sites, if so redirect
             // TODO add !array_intersect
-            if(array_intersect($needle, $baseUrls)) {
+            if(!array_intersect($needle, $baseUrls)) {
                 // check if query string should be stripped or not
                 if (!Shortlink::$settings->redirectQueryString) {
                     $path = UrlHelper::stripQueryString($path);
@@ -107,7 +111,6 @@ class ShortlinkService extends Component
                 $this->doRedirect($url, $path, $host, $redirect);
             }
         }
-        //Craft::dd('the-path');
     }
 
     /**
@@ -130,8 +133,8 @@ class ShortlinkService extends Component
 
     /**
      * @param string $path
-     * @param $siteId
-     * @return mixed|null
+     * @param null $siteId
+     * @return mixed
      */
     public function getShortlinkRedirect(string $path, $siteId = null): mixed
     {
@@ -150,7 +153,10 @@ class ShortlinkService extends Component
     }
 
     /**
-     * @throws ExitException
+     * @param Entry $entry
+     * @throws ElementNotFoundException
+     * @throws MissingComponentException
+     * @throws Throwable
      */
     public function onAfterSaveEntry(Entry $entry): void
     {
@@ -327,6 +333,9 @@ class ShortlinkService extends Component
         return false;
     }
 
+    /**
+     * @throws Exception
+     */
     public function doHomepageRedirect(string $host): bool
     {
         // need to make sure we don't get an infinite loop
