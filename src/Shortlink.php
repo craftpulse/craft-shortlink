@@ -322,6 +322,7 @@ class Shortlink extends Plugin
             'shortlink/custom-shortlinks' => 'shortlink/settings/custom-shortlinks',
             'shortlink/custom-shortlinks/add' => 'shortlink/settings/custom-shortlinks-add',
             'shortlink/custom-shortlinks/edit/<shortlinkId:\d+>' => 'shortlink/settings/custom-shortlinks-edit',
+            'shortlink/custom-shortlinks/delete/<shortlinkId:\d+>' => 'shortlink/settings/custom-shortlinks-delete',
             'shortlink/plugin' => 'shortlink/settings/plugin',
         ];
     }
