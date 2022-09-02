@@ -146,16 +146,16 @@ class SettingsController extends Controller
         $request = Craft::$app->getRequest();
 
         $shortlinkId = $request->getBodyParam('shortlinkId');
+        $shortlink = ShortlinkElement::findOne($shortlinkId);
 
-        if ($shortlinkId) {
-            $shortlink = ShortlinkElement::findOne($shortlinkId);
-        } else {
+        if (is_null($shortlink)) {
             $shortlink = new ShortlinkElement();
         }
 
         $shortlink->shortlinkUri = $request->getBodyParam('shortlinkUri') ?? null;
         $shortlink->destination = $request->getBodyParam('destination') ?? null;
         $shortlink->httpCode = $request->getBodyParam('httpCode') ?? null;
+        $shortlink->isCustom = true;
 
         $success = Craft::$app->getElements()->saveElement($shortlink);
 
