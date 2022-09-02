@@ -30,6 +30,7 @@ class ShortlinkElement extends Element
     public ?string $httpCode = null;
     public ?string $hitCount = null;
     public ?DateTime $lastUsed = null;
+    public ?bool $isCustom = false;
     public string $shortlinkStatus = self::STATUS_ACTIVE;
 
     // Static Methods
@@ -114,8 +115,13 @@ class ShortlinkElement extends Element
     public function afterSave(bool $isNew): void
     {
         try {
-            $record = ShortlinkRecord::findOne(['ownerId' => $this->ownerId]);
-            Craft::warning("SHORTLINK: fetching shortlink routes for owner ". $this->ownerId);
+            $record = null;
+
+            if (!$this->isCustom) {
+                $record = ShortlinkRecord::findOne(['ownerId' => $this->ownerId]);
+            } elseif(!$isNew) {
+                $record = ShortlinkRecord::findOne($this->id);
+            }
 
             if (!$record) {
                 $record = new ShortlinkRecord();
