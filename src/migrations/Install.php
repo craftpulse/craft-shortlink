@@ -23,7 +23,6 @@ class Install extends Migration
     public function safeUp(): bool
     {
         // Refresh the db schema caches
-
         $this->driver = Craft::$app->getConfig()->getDb()->driver;
         if ($this->createTables()) {
             $this->createIndexes();
