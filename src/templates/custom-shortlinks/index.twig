@@ -24,6 +24,11 @@
 
 {%- set content -%}
 
+    {%- set httpCode = {
+        '301': 'Permanent',
+        '302': 'Temporary'
+    } %}
+
     <div class="grid grid-cols-3 md:grid-cols-6 gap-x-4 bg-gray-100 p-4">
         <div>
             <span class="text-xs font-semibold text-gray-600 uppercase">Shortlink URI</span>
@@ -55,7 +60,7 @@
                     <span class="text-gray-600">{{- shortlink.destination -}}</span>
                 </div>
                 <div class="hide md:block">
-                    <span class="text-gray-600">{{- shortlink.httpCode -}}</span>
+                    <span class="text-gray-600">{{- shortlink.httpCode }} {{ httpCode[shortlink.httpCode] ?? '' }}</span>
                 </div>
                 <div class="hide md:block">
                     <span class="text-gray-600">{{- shortlink.hitCount ?? '-' -}}</span>
