@@ -6,6 +6,8 @@ use Craft;
 use craft\errors\MissingComponentException;
 use craft\web\Controller;
 
+use percipiolondon\shortlink\elements\ShortlinkElement;
+use percipiolondon\shortlink\records\ShortlinkRecord;
 use percipiolondon\shortlink\Shortlink;
 
 use yii\web\BadRequestHttpException;
@@ -44,6 +46,96 @@ class SettingsController extends Controller
 
         // Render the template
         return $this->renderTemplate('shortlink/settings/shortlink-settings', $variables);
+    }
+
+    public function actionDashboard(): Response
+    {
+        $variables = [];
+        $pluginName = Shortlink::$settings->pluginName;
+        $templateTitle = Craft::t('shortlink', 'Dashboard');
+
+        $variables['fullPageForm'] = true;
+        $variables['pluginName'] = $pluginName;
+        $variables['title'] = $templateTitle;
+        $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
+        $variables['selectedSubnavItem'] = 'dashboard';
+
+        // Render the template
+        return $this->renderTemplate('shortlink/dashboard', $variables);
+    }
+
+    public function actionCustomShortlinks(): Response
+    {
+        $variables = [];
+        $pluginName = Shortlink::$settings->pluginName;
+        $templateTitle = Craft::t('shortlink', 'Custom Shortlinks');
+
+        $variables['fullPageForm'] = true;
+        $variables['pluginName'] = $pluginName;
+        $variables['title'] = $templateTitle;
+        $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
+        $variables['selectedSubnavItem'] = 'custom-shortlinks';
+        $variables['currentSiteId'] = Craft::$app->getSites()->getCurrentSite()->id;
+        $variables['shortlinks'] = ShortlinkRecord::findAll(['ownerId' => null]);
+
+        // Render the template
+        return $this->renderTemplate('shortlink/custom-shortlinks', $variables);
+    }
+
+    public function actionCustomShortlinksAdd(): Response
+    {
+        $variables = [];
+        $pluginName = Shortlink::$settings->pluginName;
+        $templateTitle = Craft::t('shortlink', 'Custom Shortlinks');
+
+        $variables['fullPageForm'] = true;
+        $variables['pluginName'] = $pluginName;
+        $variables['title'] = $templateTitle;
+        $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
+        $variables['selectedSubnavItem'] = 'custom-shortlinks';
+        $variables['shortlink'] = null;
+
+        // Render the template
+        return $this->renderTemplate('shortlink/custom-shortlinks/form', $variables);
+    }
+
+    public function actionCustomShortlinksSave(): Response
+    {
+        $this->requireLogin();
+        $this->requirePostRequest();
+
+        $request = Craft::$app->getRequest();
+
+        $shortlinkId = $request->getBodyParam('shortlinkId');
+
+        if ($shortlinkId) {
+            $shortlink = ShortlinkElement::findOne($shortlinkId);
+        } else {
+            $shortlink = new ShortlinkElement();
+        }
+
+        $shortlink->shortlinkUri = $request->getBodyParam('shortlinkUri') ?? null;
+        $shortlink->destination = $request->getBodyParam('destination') ?? null;
+        $shortlink->httpCode = $request->getBodyParam('httpCode') ?? null;
+
+        $success = Craft::$app->getElements()->saveElement($shortlink);
+
+        if ($success) {
+            return $this->redirect('/admin/shortlink/custom-shortlinks');
+        }
+
+        $variables = [];
+        $pluginName = Shortlink::$settings->pluginName;
+        $templateTitle = Craft::t('shortlink', 'Custom Shortlinks');
+
+        $variables['fullPageForm'] = true;
+        $variables['pluginName'] = $pluginName;
+        $variables['title'] = $templateTitle;
+        $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
+        $variables['selectedSubnavItem'] = 'custom-shortlinks';
+        $variables['shortlink'] = $shortlink;
+
+        return $this->renderTemplate('staff-management/benefits/policy/form', $variables);
     }
 
     /**
