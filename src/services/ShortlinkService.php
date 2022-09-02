@@ -21,6 +21,9 @@ use Exception;
 use Throwable;
 use yii\base\ExitException;
 use yii\base\InvalidConfigException;
+use yii\base\InvalidRouteException;
+use yii\web\HttpException;
+use yii\web\NotFoundHttpException;
 
 /**
  * @author    percipiolondon
@@ -90,7 +93,8 @@ class ShortlinkService extends Component
                 $baseUrls[] = $site->baseUrl;
             }
 
-            // check if our hostname is one of the existing Craft sites, if so don't try to redirect
+            // check if our hostname is not one of the existing Craft sites, if so redirect
+            // TODO add !array_intersect
             if(array_intersect($needle, $baseUrls)) {
                 // check if query string should be stripped or not
                 if (!Shortlink::$settings->redirectQueryString) {
@@ -100,10 +104,10 @@ class ShortlinkService extends Component
 
                 // Redirect if we find a match, otherwise let Craft handle it
                 $redirect = $this->findShortlinkMatch($path);
-                $this->doRedirect($url, $path, $redirect);
+                $this->doRedirect($url, $path, $host, $redirect);
             }
         }
-        Craft::dd('the-path');
+        //Craft::dd('the-path');
     }
 
     /**
@@ -164,7 +168,7 @@ class ShortlinkService extends Component
      * @throws Throwable
      * @throws ElementNotFoundException
      * @throws MissingComponentException
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     public function saveShortlink($entry = null, array $post): bool
     {
@@ -237,7 +241,7 @@ class ShortlinkService extends Component
     }
 
     /**
-     * @param string $chars
+     * @param string $characters
      * @return string
      * @throws Exception
      */
@@ -263,8 +267,9 @@ class ShortlinkService extends Component
 
     /**
      * @throws InvalidConfigException
+     * @throws \yii\base\Exception
      */
-    public function doRedirect(string $url, string $path, ?array $redirect): bool
+    public function doRedirect(string $url, string $path, string $host, ?array $redirect): bool
     {
         $response = Craft::$app->getResponse();
         if ($redirect !== null) {
@@ -295,6 +300,54 @@ class ShortlinkService extends Component
             } catch (ExitException $e) {
                 Craft::error($e->getMessage(), __METHOD__);
             }
+        } else {
+            $behavior = Shortlink::$settings->redirectBehavior;
+
+            match ($behavior) {
+                '404' => $this->doErrorRedirect(),
+                'homepage' => $this->doHomepageRedirect($host),
+            };
+        }
+
+        return false;
+    }
+
+    public function doErrorRedirect(): bool
+    {
+        $response = Craft::$app->getResponse();
+        $errorHandler = Craft::$app->getErrorHandler();
+        $errorHandler->exception = new NotFoundHttpException();
+        try {
+            $response = Craft::$app->runAction('templates/render-error');
+        } catch (InvalidRouteException | \yii\console\Exception $e) {
+            Craft::error($e->getMessage(), __METHOD__);
+        }
+        $response->redirect()->send();
+
+        return false;
+    }
+
+    public function doHomepageRedirect(string $host): bool
+    {
+        // need to make sure we don't get an infinite loop
+        $response = Craft::$app->getResponse();
+        $sites = Craft::$app->getSites()->allSites;
+        $baseUrls = [];
+        // host returns including trailing slash, make sure we check for that too if it's not site in the SITE_URL
+        $needle = [
+            $host,
+            $host . '/',
+        ];
+
+        // add all baseUrls to an array in case of multisite
+        foreach($sites as $site) {
+            $baseUrls[] = $site->baseUrl;
+        }
+
+        if(!array_intersect($needle, $baseUrls)) {
+            // only handles main site redirects for now
+            $destination = UrlHelper::siteUrl('/', null, null, null);
+            $response->redirect($destination)->send();
         }
 
         return false;
