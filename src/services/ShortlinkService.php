@@ -31,18 +31,26 @@ use yii\web\NotFoundHttpException;
  */
 class ShortlinkService extends Component
 {
+
+    public function getShortlinkById(int $id): ?ShortlinkElement
+    {
+        /* @noinspection PhpIncompatibleReturnTypeInspection */
+        return Craft::$app->getElements()->getElementById($id, ShortlinkElement::class);
+    }
+
     /**
      * @throws ExitException
      */
     public function getShortLink(Entry $element): array|string|null
     {
         $shortlink = ShortlinkElement::findOne(['ownerId' => $element->id]);
-
+        //Craft::dd($shortlink);
         if (!is_null($shortlink)) {
             return $shortlink->shortlinkUri;
         }
 
         return $this->generateShortlink();
+        return null;
     }
 
     /**
@@ -79,7 +87,7 @@ class ShortlinkService extends Component
     {
         $request = Craft::$app->getRequest();
         // Only handle site requests, no live previews or console requests
-        if ($request->getIsSiteRequest() && !$request->getIsLivePreview() && !$request->getIsConsoleRequest()) {
+        if ($request->getIsSiteRequest() && !$request->getIsLivePreview() && !$request->getIsConsoleRequest() &&!$request->getIsCpRequest()) {
                 $host = urldecode($request->getHostInfo());
                 $path = urldecode($request->getUrl());
                 $url = urldecode($request->getAbsoluteUrl());
