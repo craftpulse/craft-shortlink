@@ -3,13 +3,17 @@
 namespace percipiolondon\shortlink\controllers;
 
 use Craft;
+use craft\errors\ElementNotFoundException;
 use craft\errors\MissingComponentException;
+use craft\errors\SiteNotFoundException;
 use craft\web\Controller;
 
 use percipiolondon\shortlink\elements\ShortlinkElement;
 use percipiolondon\shortlink\records\ShortlinkRecord;
 use percipiolondon\shortlink\Shortlink;
 
+use Throwable;
+use yii\base\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
@@ -28,7 +32,6 @@ class SettingsController extends Controller
      *
      *
      * @return Response The rendered result
-     * @throws NotFoundHttpException
      * @throws ForbiddenHttpException
      */
     public function actionPlugin(): Response
@@ -59,54 +62,72 @@ class SettingsController extends Controller
         $variables['title'] = $templateTitle;
         $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
         $variables['selectedSubnavItem'] = 'dashboard';
+        $variables['currentSiteId'] = Craft::$app->getSites()->getCurrentSite()->id;
+        $variables['shortlinks'] = ShortlinkRecord::findAll(
+            [
+                'ownerId' => ':notempty:',
+            ]);
 
         // Render the template
         return $this->renderTemplate('shortlink/dashboard', $variables);
     }
 
-    public function actionCustomShortlinks(): Response
+    /**
+     * @throws SiteNotFoundException
+     */
+    public function actionStaticShortlinks(): Response
     {
         $variables = [];
         $pluginName = Shortlink::$settings->pluginName;
-        $templateTitle = Craft::t('shortlink', 'Custom Shortlinks');
+        $templateTitle = Craft::t('shortlink', 'Static Shortlinks');
 
         $variables['fullPageForm'] = true;
         $variables['pluginName'] = $pluginName;
         $variables['title'] = $templateTitle;
         $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
-        $variables['selectedSubnavItem'] = 'custom-shortlinks';
+        $variables['selectedSubnavItem'] = 'static-shortlinks';
         $variables['currentSiteId'] = Craft::$app->getSites()->getCurrentSite()->id;
-        $variables['shortlinks'] = ShortlinkRecord::findAll(['ownerId' => null]);
+        $variables['shortlinks'] = ShortlinkRecord::findAll(
+            [
+                'ownerId' => null,
+                'ownerRevisionId' => null
+            ]);
 
         // Render the template
-        return $this->renderTemplate('shortlink/custom-shortlinks', $variables);
+        return $this->renderTemplate('shortlink/static-shortlinks', $variables);
     }
 
-    public function actionCustomShortlinksAdd(): Response
+    public function actionStaticShortlinksAdd(): Response
     {
         $variables = [];
         $pluginName = Shortlink::$settings->pluginName;
-        $templateTitle = Craft::t('shortlink', 'Custom Shortlinks');
+        $templateTitle = Craft::t('shortlink', 'Static Shortlinks');
 
         $variables['fullPageForm'] = true;
         $variables['pluginName'] = $pluginName;
         $variables['title'] = $templateTitle;
         $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
-        $variables['selectedSubnavItem'] = 'custom-shortlinks';
+        $variables['selectedSubnavItem'] = 'static-shortlinks';
         $variables['shortlink'] = null;
 
         // Render the template
-        return $this->renderTemplate('shortlink/custom-shortlinks/form', $variables);
+        return $this->renderTemplate('shortlink/static-shortlinks/form', $variables);
     }
 
-    public function actionCustomShortlinksEdit(int $shortlinkId): Response
+    /**
+     * @throws NotFoundHttpException
+     */
+    public function actionStaticShortlinksEdit(int $shortlinkId): Response
     {
         $variables = [];
         $pluginName = Shortlink::$settings->pluginName;
-        $templateTitle = Craft::t('shortlink', 'Custom Shortlinks');
+        $templateTitle = Craft::t('shortlink', 'Static Shortlinks');
         $shortlink = ShortlinkElement::findOne($shortlinkId);
 
-        if (is_null($shortlink)) {
+        //Craft::dd($shortlinkId);
+
+        if (!$shortlink) {
+            //Craft::dd($shortlink);
             throw new NotFoundHttpException(Craft::t('shortlink', 'Shortlink does not exist'));
         }
 
@@ -114,31 +135,41 @@ class SettingsController extends Controller
         $variables['pluginName'] = $pluginName;
         $variables['title'] = $templateTitle;
         $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
-        $variables['selectedSubnavItem'] = 'custom-shortlinks';
+        $variables['selectedSubnavItem'] = 'static-shortlinks';
         $variables['shortlink'] = $shortlink;
 
         // Render the template
-        return $this->renderTemplate('shortlink/custom-shortlinks/form', $variables);
+        return $this->renderTemplate('shortlink/static-shortlinks/form', $variables);
     }
 
-    public function actionCustomShortlinksDelete(int $shortlinkId): Response
+    /**
+     * @throws Throwable
+     * @throws NotFoundHttpException
+     */
+    public function actionStaticShortlinksDelete(int $shortlinkId): Response
     {
         $shortlink = ShortlinkElement::findOne($shortlinkId);
 
-        if (is_null($shortlink)) {
+        if (!$shortlink) {
             throw new NotFoundHttpException(Craft::t('shortlink', 'Shortlink does not exist'));
         }
 
-        $success = Craft::$app->getElements()->deleteElement($shortlink);
+        $success = Craft::$app->getElements()->deleteElement($shortlink, true);
 
         if (!$success) {
             throw new NotFoundHttpException(Craft::t('shortlink', 'Shortlink cannot be deleted'));
         }
 
-        return $this->redirect('/admin/shortlink/custom-shortlinks');
+        return $this->redirect('/admin/shortlink/static-shortlinks');
     }
 
-    public function actionCustomShortlinksSave(): Response
+    /**
+     * @throws Throwable
+     * @throws ElementNotFoundException
+     * @throws Exception
+     * @throws BadRequestHttpException
+     */
+    public function actionStaticShortlinksSave(): Response
     {
         $this->requireLogin();
         $this->requirePostRequest();
@@ -152,29 +183,28 @@ class SettingsController extends Controller
             $shortlink = new ShortlinkElement();
         }
 
-        $shortlink->shortlinkUri = $request->getBodyParam('shortlinkUri') ?? null;
-        $shortlink->destination = $request->getBodyParam('destination') ?? null;
-        $shortlink->httpCode = $request->getBodyParam('httpCode') ?? null;
-        $shortlink->isCustom = true;
+        $shortlink->shortlinkUri = $request->getBodyParam('shortlinkUri');
+        $shortlink->destination = $request->getBodyParam('destination');
+        $shortlink->httpCode = $request->getBodyParam('httpCode');
 
         $success = Craft::$app->getElements()->saveElement($shortlink);
 
         if ($success) {
-            return $this->redirect('/admin/shortlink/custom-shortlinks');
+            return $this->redirect('/admin/shortlink/static-shortlinks');
         }
 
         $variables = [];
         $pluginName = Shortlink::$settings->pluginName;
-        $templateTitle = Craft::t('shortlink', 'Custom Shortlinks');
+        $templateTitle = Craft::t('shortlink', 'Static Shortlinks');
 
         $variables['fullPageForm'] = true;
         $variables['pluginName'] = $pluginName;
         $variables['title'] = $templateTitle;
         $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
-        $variables['selectedSubnavItem'] = 'custom-shortlinks';
+        $variables['selectedSubnavItem'] = 'static-shortlinks';
         $variables['shortlink'] = $shortlink;
 
-        return $this->renderTemplate('staff-management/benefits/policy/form', $variables);
+        return $this->renderTemplate('shortlink/static-shortlinks', $variables);
     }
 
     /**
