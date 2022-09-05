@@ -1,4 +1,4 @@
-{%- requirePermission "shortlink:dashboard" -%}
+{%- requirePermission "shortlink:static-shortlinks" -%}
 
 {%- extends '_layouts/cp.twig' -%}
 {%- import '_includes/forms' as forms -%}
@@ -7,7 +7,7 @@
 
 {% block actionButton %}
     <div class="buttons">
-        <button type="submit" data-action="{{ cpUrl('shortlink/settings/custom-shortlinks-save') }}" class="btn submit">{{ "Save"|t("shortlink") }}</button>
+        <button type="submit" data-action="{{ cpUrl('shortlink/settings/static-shortlinks-save') }}" class="btn submit">{{ "Save"|t("shortlink") }}</button>
     </div>
 {% endblock %}
 
@@ -15,7 +15,7 @@
 
     <h1 class="text-xl font-semibold text-gray-900">{{ shortlink ? 'Edit' : 'New' }} Shortlink</h1>
 
-    <input type="hidden" name="action" value="shortlink/settings/custom-shortlinks-save" />
+    <input type="hidden" name="action" value="shortlink/settings/static-shortlinks-save" />
     <input type="hidden" name="shortlinkId" value="{{- shortlink ? shortlink.id : '' -}}" />
     <input type="hidden" name="siteId" value="{{- shortlink ? shortlink.siteId : currentSite.id -}}" />
 

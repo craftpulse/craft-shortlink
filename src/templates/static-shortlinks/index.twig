@@ -18,7 +18,7 @@
 
 {% block actionButton %}
     <div class="buttons">
-        <a href="{{ cpUrl('shortlink/custom-shortlinks/add') }}" class="btn submit add icon">{{ "New Custom Shortlink"|t("shortlink") }}</a>
+        <a href="{{ cpUrl('shortlink/static-shortlinks/add') }}" class="btn submit add icon">{{ "New Custom Shortlink"|t("shortlink") }}</a>
     </div>
 {% endblock %}
 
@@ -69,15 +69,15 @@
                     <span class="text-gray-600">{{- shortlink.lastUsed ? shortlink.lastUsed|date('Y-m-d') : '-' -}}</span>
                 </div>
                 <div>
-                    <a href="{{- cpUrl('shortlink/custom-shortlinks/edit/'~shortlink.id) -}}">Edit</a>
-                    {#|
-                    <a href="{{- cpUrl('shortlink/custom-shortlinks/delete/'~shortlink.id) -}}">Delete</a>#}
+                    <a href="{{- cpUrl('shortlink/static-shortlinks/edit/'~shortlink.id) -}}">Edit</a>
+                    |
+                    <a href="{{- cpUrl('shortlink/static-shortlinks/delete/'~shortlink.id) -}}">Delete</a>
                 </div>
             </div>
         {%- endfor -%}
     {%- else -%}
         <div class="grid grid-cols-3 md:grid-cols-6 gap-x-4 px-4 py-2">
-            <div class="col-span-3 md:col-span-6"><i>No custom shortlinks has been set yet</i></div>
+            <div class="col-span-3 md:col-span-6"><i>No static shortlinks have been created.</i></div>
         </div>
     {%- endif -%}
 
