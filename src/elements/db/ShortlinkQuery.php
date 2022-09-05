@@ -14,6 +14,7 @@ class ShortlinkQuery extends ElementQuery
     // =========================================================================
 
     public mixed $ownerId = null;
+    public mixed $ownerRevisionId = null;
     public mixed $shortlinkUri = null;
     public mixed $destination = null;
     public mixed $httpCode = null;
@@ -26,6 +27,12 @@ class ShortlinkQuery extends ElementQuery
     public function ownerId($value): static
     {
         $this->ownerId = $value;
+        return $this;
+    }
+
+    public function ownerRevisionId($value): static
+    {
+        $this->ownerRevisionId = $value;
         return $this;
     }
 
@@ -69,6 +76,10 @@ class ShortlinkQuery extends ElementQuery
 
         if ($this->ownerId) {
             $this->subQuery->andWhere(Db::parseParam('shortlink_routes.ownerId', $this->ownerId));
+        }
+
+        if ($this->ownerRevisionId) {
+            $this->subQuery->andWhere(Db::parseParam('shortlink_routes.ownerRevisionId', $this->ownerRevisionId));
         }
 
         if ($this->shortlinkUri) {
