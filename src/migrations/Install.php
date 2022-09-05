@@ -59,12 +59,12 @@ class Install extends Migration
                 'ownerId' => $this->integer(),
                 'ownerRevisionId' => $this->integer(),
                 // fields
-                'shortlinkUri' => $this->string(255)->notNull(),
+                'shortlinkUri' => $this->string(255),
                 'destination' => $this->string(255),
-                'httpCode' => $this->string()->notNull(),
+                'httpCode' => $this->string(),
                 'hitCount' => $this->integer()->defaultValue(0),
                 'lastUsed' => $this->dateTime(),
-                'shortlinkStatus' => $this->enum('status', ['active', 'inactive'])->notNull(),
+                'shortlinkStatus' => $this->enum('status', ['active', 'inactive']),
             ]);
 
             $tableRoutesCreated = true;
