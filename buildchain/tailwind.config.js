@@ -1,25 +1,7 @@
 module.exports = {
     content: [
-        './src/**/*.{vue,js,ts}',
-    ],
-    safelist: [
-        'bg-gray-100',
-        'block',
-        'md:block',
-        'col-span-3',
-        'md:col-span-6',
-        'font-semibold',
-        'gap-x-4',
-        'grid',
-        'grid-cols-3',
-        'md:grid-cols-6',
-        'hidden',
-        'p-4',
-        'px-4',
-        'py-2',
-        'text-gray-600',
-        'text-xs',
-        'uppercase'
+        '../src/templates/**/*.{twig,html}',
+        './src/vue/*.{vue,html}',
     ],
     theme: {
         // Extend the default Tailwind config here

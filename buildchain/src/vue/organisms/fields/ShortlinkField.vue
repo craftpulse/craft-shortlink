@@ -3,6 +3,7 @@ interface Props {
     allowCustom: boolean
     label?: string
     shortlink: string
+    shortlinkId?: number
     redirectLabel?: string
     redirectType: string
     showRedirectOption: boolean
@@ -65,5 +66,7 @@ withDefaults(defineProps<Props>(), {
                 </div>
             </div>
         </div>
+
+        <input type="hidden" name="shortlinkId" :value="shortlinkId">
     </div>
 </template>

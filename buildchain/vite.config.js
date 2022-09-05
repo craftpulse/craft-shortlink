@@ -1,7 +1,9 @@
 import vue from '@vitejs/plugin-vue'
 import ViteRestart from 'vite-plugin-restart';
+import viteCompression from 'vite-plugin-compression';
+import eslintPlugin from 'vite-plugin-eslint';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
-import path from 'path';
+import * as path from 'path';
 
 // https://vitejs.dev/config/
 export default ({ command }) => ({
@@ -12,8 +14,8 @@ export default ({ command }) => ({
         outDir: '../src/web/assets/dist',
         rollupOptions: {
             input: {
-                shortlink: '/src/js/shortlink.ts',
-                'shortlink-field': '/src/js/shortlink-field.ts',
+                shortlink: 'src/js/shortlink.ts',
+                'shortlink-field': 'src/js/shortlink-field.ts',
             },
             output: {
                 sourcemap: true
