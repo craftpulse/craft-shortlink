@@ -4,6 +4,7 @@ namespace percipiolondon\shortlink\assetbundles\shortlink;
 
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
+use craft\web\assets\vue\VueAsset;
 
 /**
  *
@@ -26,6 +27,13 @@ class ShortlinkAsset extends AssetBundle
 
         $this->depends = [
             CpAsset::class,
+            VueAsset::class,
+        ];
+
+        $this->js = [
+        ];
+
+        $this->css = [
         ];
 
         parent::init();
