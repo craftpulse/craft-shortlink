@@ -9,7 +9,6 @@ use DateTime;
 
 use Exception;
 use percipiolondon\shortlink\elements\db\ShortlinkQuery;
-use percipiolondon\shortlink\helpers\UrlHelper;
 use percipiolondon\shortlink\records\ShortlinkRecord;
 
 class ShortlinkElement extends Element
@@ -30,7 +29,6 @@ class ShortlinkElement extends Element
     public ?string $httpCode = null;
     public ?string $hitCount = null;
     public ?DateTime $lastUsed = null;
-    public ?bool $isCustom = false;
     public string $shortlinkStatus = self::STATUS_ACTIVE;
 
     // Static Methods
@@ -114,33 +112,31 @@ class ShortlinkElement extends Element
 
     public function afterSave(bool $isNew): void
     {
-        try {
-            $record = null;
+        if (!$isNew) {
+            $record = ShortlinkRecord::findOne($this->id);
 
-            if (!$this->isCustom) {
-                $record = ShortlinkRecord::findOne(['ownerId' => $this->ownerId]);
-            } elseif(!$isNew) {
-                $record = ShortlinkRecord::findOne($this->id);
+            if(!$record) {
+                throw new Exception('Invalid shortlink ID: ' . $this->id);
             }
-
-            if (!$record) {
-                $record = new ShortlinkRecord();
-                $record->id = $this->id;
-            }
-
-            $record->siteId = Craft::$app->getSites()->currentSite->id;
-            $record->ownerId = $this->ownerId;
-            $record->ownerRevisionId = $this->ownerRevisionId;
-            $record->shortlinkUri = UrlHelper::sanitizeUrl($this->shortlinkUri);
-            $record->destination = $this->destination ?? null;
-            $record->httpCode = $this->httpCode;
-            $record->hitCount = $this->hitCount;
-            $record->lastUsed = $this->lastUsed;
-            $record->shortlinkStatus = $this->shortlinkStatus;
-
-            $record->save();
-        } catch (Exception $e) {
-            Craft::error($e->getMessage(), __METHOD__);
+        } else {
+            $record = new ShortlinkRecord();
+            $record->id = $this->id;
         }
+
+        $record->siteId = Craft::$app->getSites()->currentSite->id;
+        $record->ownerId = $this->ownerId;
+        $record->ownerRevisionId = $this->ownerRevisionId;
+        $record->shortlinkUri = $this->shortlinkUri;
+        $record->destination = $this->destination ?? null;
+        $record->httpCode = $this->httpCode;
+        $record->hitCount = $this->hitCount;
+        $record->lastUsed = $this->lastUsed;
+        $record->shortlinkStatus = $this->shortlinkStatus;
+
+        $record->save(false);
+
+        $this->id = $record->id;
+
+        parent::afterSave($isNew);
     }
 }
