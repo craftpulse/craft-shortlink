@@ -15,7 +15,7 @@
 
 {% requirePermission 'shortlink:plugin-settings' %}
 
-{% extends '_layouts/cp' %}
+{% extends 'shortlink/_layouts/shortlink-cp' %}
 {% import '_includes/forms' as forms %}
 
 {% do view.registerAssetBundle('percipiolondon\\shortlink\\assetbundles\\shortlink\\ShortlinkAsset') %}
