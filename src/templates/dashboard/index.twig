@@ -1,11 +1,51 @@
 {%- requirePermission "shortlink:dashboard" -%}
 
-{%- extends '_layouts/cp.twig' -%}
+{%- extends 'shortlink/_layouts/shortlink-cp.twig' -%}
 
-{%- set content -%}
+{%- block content -%}
 
-    <h2>About Shortlink</h2>
+    <div class="grid grid-cols-6 md:grid-cols-10 gap-x-8 bg-gray-100 px-4 py-2">
+        <div class="col-span-3 flex items-center">
+            <span class="text-xs font-semibold text-gray-600 uppercase">Shortlink URI</span>
+        </div>
+        <div class="col-span-3 flex items-center">
+            <span class="text-xs font-semibold text-gray-600 uppercase">Destination</span>
+        </div>
+        <div class="hide md:flex items-center">
+            <span class="text-xs font-semibold text-gray-600 uppercase">Status</span>
+        </div>
+        <div class="hide md:flex items-center">
+            <span class="text-xs font-semibold text-gray-600 uppercase">Hits</span>
+        </div>
+        <div class="hide md:flex items-center col-span-2">
+            <span class="text-xs font-semibold text-gray-600 uppercase">Last Hit</span>
+        </div>
+    </div>
 
-    <p>Shortlink is a plugin to provide short handed URLs for easy sharing. This plugin will redirect the short link to the actual page.</p>
+    {%- if shortlinks|length > 0 -%}
+        {%- for shortlink in shortlinks -%}
+            <div class="grid grid-cols-6 md:grid-cols-10 gap-x-8 px-4 py-1 {{ cycle(['bg-gray-50', 'bg-white'], loop.index) }}">
+                <div class="col-span-3 flex items-center">
+                    <span class="text-gray-600">{{- shortlink.shortlinkUri -}}</span>
+                </div>
+                <div class="col-span-3 flex items-center">
+                    <span class="text-gray-600 break-all">{{- shortlink.destination -}}</span>
+                </div>
+                <div class="hide md:flex items-center">
+                    <span class="text-gray-600">{{- shortlink.httpCode }}</span>
+                </div>
+                <div class="hide md:flex items-center">
+                    <span class="text-gray-600">{{- shortlink.hitCount ?? '0' -}}</span>
+                </div>
+                <div class="hide md:flex items-center col-span-2">
+                    <span class="text-gray-600">{{- shortlink.lastUsed ? shortlink.lastUsed|date('Y-m-d') : '-' -}}</span>
+                </div>
+            </div>
+        {%- endfor -%}
+    {%- else -%}
+        <div class="px-4 py-2">
+            <div class="col-span-3 md:col-span-6"><i>No static shortlinks have been created.</i></div>
+        </div>
+    {%- endif -%}
 
-{%- endset -%}
+{%- endblock -%}
