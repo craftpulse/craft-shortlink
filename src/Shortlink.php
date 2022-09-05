@@ -8,9 +8,11 @@ use craft\base\Plugin;
 use craft\elements\Entry;
 use craft\events\DefineHtmlEvent;
 use craft\events\ModelEvent;
+use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
 use craft\helpers\UrlHelper;
+use craft\services\Elements;
 use craft\services\Plugins;
 use craft\services\UserPermissions;
 use craft\web\twig\variables\CraftVariable;
@@ -18,6 +20,7 @@ use craft\web\UrlManager;
 use craft\web\View;
 use nystudio107\pluginvite\services\VitePluginService;
 use percipiolondon\shortlink\assetbundles\shortlink\ShortlinkAsset;
+use percipiolondon\shortlink\elements\ShortlinkElement;
 use percipiolondon\shortlink\helpers\PluginTemplate;
 use percipiolondon\shortlink\models\SettingsModel as Settings;
 use percipiolondon\shortlink\services\ShortlinkService;
@@ -29,20 +32,21 @@ use yii\base\event;
 
 /**
  *
-* @author    percipiolondon
-* @package   Shortlink
-* @since     1.0.0
-*
-* @property ShortlinkService $shortlinkService
-* @property VitePluginService  $vite
-* @property Settings $settings
-* @property mixed|object|null $shortlinks
-*
-*/
+ * @author    percipiolondon
+ * @package   Shortlink
+ * @since     1.0.0
+ *
+ * @property ShortlinkService $shortlinkService
+ * @property VitePluginService $vite
+ * @property Settings $settings
+ * @property-read mixed $settingsResponse
+ * @property-read null|array $cpNavItem
+ * @property mixed|object|null $shortlinks
+ *
+ */
 
 class Shortlink extends Plugin
 {
-    protected const SHORTLINK_PREVIEW_PATH = 'shortlink/sidebar/preview-shortlink';
 
     // Static Properties
     // =================
@@ -102,7 +106,7 @@ class Shortlink extends Plugin
                 'useDevServer' => true,
                 'devServerPublic' => 'http://localhost:3751',
                 'serverPublic' => 'http://localhost:3700',
-                'errorEntry' => '/src/js/shortlink.ts',
+                'errorEntry' => 'src/js/shortlink.ts',
                 'devServerInternal' => 'http://craft-shortlink-buildchain:3751',
                 'checkDevServer' => true,
             ],
@@ -142,6 +146,15 @@ class Shortlink extends Plugin
                     'class' => ShortlinkVariable::class,
                     'viteService' => $this->vite,
                 ]);
+            }
+        );
+
+        // Register elements
+        Event::on(
+            Elements::class,
+            Elements::EVENT_REGISTER_ELEMENT_TYPES,
+            function(RegisterComponentTypesEvent $event): void {
+                $event->types[] = ShortlinkElement::class;
             }
         );
 
@@ -192,10 +205,10 @@ class Shortlink extends Plugin
                 'url' => 'shortlink/dashboard',
             ];
         }
-        if ($currentUser->can('shortlink:custom-shortlinks')) {
-            $subNavs['custom-shortlinks'] = [
-                'label' => Craft::t('shortlink', 'Custom Shortlinks'),
-                'url' => 'shortlink/custom-shortlinks',
+        if ($currentUser->can('shortlink:static-shortlinks')) {
+            $subNavs['static-shortlinks'] = [
+                'label' => Craft::t('shortlink', 'Static Shortlinks'),
+                'url' => 'shortlink/static-shortlinks',
             ];
         }
 
@@ -319,10 +332,10 @@ class Shortlink extends Plugin
         return [
             'shortlink' => 'shortlink/settings/dashboard',
             'shortlink/dashboard' => 'shortlink/settings/dashboard',
-            'shortlink/custom-shortlinks' => 'shortlink/settings/custom-shortlinks',
-            'shortlink/custom-shortlinks/add' => 'shortlink/settings/custom-shortlinks-add',
-            'shortlink/custom-shortlinks/edit/<shortlinkId:\d+>' => 'shortlink/settings/custom-shortlinks-edit',
-            'shortlink/custom-shortlinks/delete/<shortlinkId:\d+>' => 'shortlink/settings/custom-shortlinks-delete',
+            'shortlink/static-shortlinks' => 'shortlink/settings/static-shortlinks',
+            'shortlink/static-shortlinks/add' => 'shortlink/settings/static-shortlinks-add',
+            'shortlink/static-shortlinks/edit/<shortlinkId:\d+>' => 'shortlink/settings/static-shortlinks-edit',
+            'shortlink/static-shortlinks/delete/<shortlinkId:\d+>' => 'shortlink/settings/static-shortlinks-delete',
             'shortlink/plugin' => 'shortlink/settings/plugin',
         ];
     }
@@ -338,8 +351,8 @@ class Shortlink extends Plugin
             'shortlink:dashboard' => [
                 'label' => Craft::t('shortlink', 'Dashboard'),
             ],
-            'shortlink:custom-shortlinks' => [
-                'label' => Craft::t('shortlink', 'Custom Shortlinks'),
+            'shortlink:static-shortlinks' => [
+                'label' => Craft::t('shortlink', 'Static Shortlinks'),
             ],
             'shortlink:plugin-settings' => [
                 'label' => Craft::t('shortlink', 'Edit Plugin Settings'),
@@ -351,26 +364,41 @@ class Shortlink extends Plugin
     }
 
     /**
-     * @param Element $element
-     *
+     * @param Entry $entry
      * @return string
      * @throws LoaderError
      * @throws RuntimeError
      * @throws SyntaxError
      */
-    protected function renderSidebar(Element $element): string
+    protected function renderSidebar(Entry $entry): string
     {
         $user = Craft::$app->getUser();
+        $shortlink = self::getInstance()->shortlinks->getShortlink($entry);
+        // if element is a duplicate regenerate, fire before save?
+        if($entry->duplicateOf) {
+            $shortlink = self::getInstance()->shortlinks->getShortlink($entry);
+        }
         return PluginTemplate::renderPluginTemplate(
             '_sidebars/entry-shortlink.twig',
             [
-                'currentSiteId' => $element->siteId ?? 0,
-                'showRedirectOption' => $user->checkPermission('shortlink:entry-redirect'),
                 'allowCustom' => self::$settings->allowCustom,
+                'currentSiteId' => $element->siteId ?? 0,
                 'redirectType' => self::$settings->redirectType,
-                'shortlink' => self::getInstance()->shortlinks->getShortlink($element),
+                'shortlink' => $shortlink,
+                'shortlinkId' => $this->_getShortlinkFromContext($entry)->id,
+                'showRedirectOption' => $user->checkPermission('shortlink:entry-redirect'),
             ]
         );
+    }
+
+    private function _getShortlinkFromContext($entry): ShortlinkElement
+    {
+        // Get existing shortlink
+        $ownerId = $entry->id ?? ':empty:';
+
+        return ShortlinkElement::find()
+            ->ownerId($ownerId)
+            ->one();
     }
 
 }
