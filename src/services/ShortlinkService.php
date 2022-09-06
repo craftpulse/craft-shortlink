@@ -359,7 +359,7 @@ class ShortlinkService extends Component
             $baseUrls[] = $site->baseUrl;
         }
 
-        if(!array_intersect($needle, $baseUrls)) {
+        if(array_intersect($needle, $baseUrls)) {
             // only handles main site redirects for now
             $destination = UrlHelper::siteUrl('/', null, null, null);
             $response->redirect($destination)->send();
