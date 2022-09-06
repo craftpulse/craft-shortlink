@@ -1,9 +1,9 @@
 import { createApp } from 'vue'
-import Shortlink from '~/vue/Shortlink.vue'
+import ShortLink from '~/vue/ShortLink.vue'
 
 // App main
 const main = async () => {
-    const shortlink = createApp(Shortlink)
+    const shortlink = createApp(ShortLink)
     const app = shortlink.mount('#shortlink-generator')
 
     return app
