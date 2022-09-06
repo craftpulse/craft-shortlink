@@ -4,8 +4,12 @@ All notable changes to this project will be documented in this file.
 
 ## 4.0.0-beta.3 - 2022-09-06
 
+### Added
+- Eslint Config
+
 ### Fixed
 - Issue that could occur when there is no cpEditUrl
+- Linting issues
 
 ## 4.0.0-beta.2 - 2022-09-06
 
