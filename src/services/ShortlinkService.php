@@ -8,8 +8,8 @@ use craft\db\Query;
 use craft\elements\Entry;
 use craft\errors\ElementNotFoundException;
 use craft\errors\MissingComponentException;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
-
 
 use Illuminate\Support\Collection;
 use percipiolondon\shortlink\Shortlink;
@@ -17,6 +17,7 @@ use percipiolondon\shortlink\helpers\UrlHelper;
 use percipiolondon\shortlink\models\ShortlinkModel;
 use percipiolondon\shortlink\elements\ShortlinkElement;
 
+use DateTime;
 use Exception;
 use Throwable;
 use yii\base\ExitException;
@@ -32,6 +33,19 @@ use yii\web\NotFoundHttpException;
 class ShortlinkService extends Component
 {
 
+    // Constants
+    // ==================
+
+    const CACHE_KEY = 'shortlink_redirect_';
+
+    // Protected Properties
+    // =========================================================================
+
+    /**
+     * @var null|array
+     */
+    protected ?array $cachedRedirects = null;
+
     public function getShortlinkById(int $id): ?ShortlinkElement
     {
         /* @noinspection PhpIncompatibleReturnTypeInspection */
@@ -44,13 +58,11 @@ class ShortlinkService extends Component
     public function getShortLink(Entry $element): array|string|null
     {
         $shortlink = ShortlinkElement::findOne(['ownerId' => $element->id]);
-        //Craft::dd($shortlink);
-        if (!is_null($shortlink)) {
+        if (!$shortlink) {
             return $shortlink->shortlinkUri;
         }
 
         return $this->generateShortlink();
-        return null;
     }
 
     /**
@@ -87,7 +99,7 @@ class ShortlinkService extends Component
     {
         $request = Craft::$app->getRequest();
         // Only handle site requests, no live previews or console requests
-        if ($request->getIsSiteRequest() && !$request->getIsLivePreview() && !$request->getIsConsoleRequest() &&!$request->getIsCpRequest()) {
+        if ($request->getIsSiteRequest() && !$request->getIsLivePreview() && !$request->getIsConsoleRequest() && !$request->getIsCpRequest()) {
                 $host = urldecode($request->getHostInfo());
                 $path = urldecode($request->getUrl());
                 $url = urldecode($request->getAbsoluteUrl());
@@ -239,76 +251,6 @@ class ShortlinkService extends Component
     }
 
     /**
-     * @throws Exception
-     */
-    private function _setShortlinkFromPost(): ShortlinkElement
-    {
-        $request = Craft::$app->getRequest();
-        $shortlinkId = $request->getParam('shortlinkId');
-
-        if ($shortlinkId) {
-            $shortlink = $this->getShortlinkById($shortlinkId);
-
-            if (!$shortlink) {
-                throw new Exception (Craft::t('shortlink', 'No shortlink with the ID “{id}”', ['id' => $shortlinkId]));
-            }
-        } else {
-            $shortlink = new ShortlinkElement();
-        }
-
-        return $shortlink;
-    }
-
-    /**
-     * @param string $casing
-     * @param string $alphaNumeric
-     * @return array
-     */
-    private function _defineFormat(string $casing = 'mixed', string $alphaNumeric = 'alphaNumeric'): array {
-        // define the charset
-        $formats = [];
-
-        if($alphaNumeric === 'numeric' || $alphaNumeric === 'alphaNumeric') {
-            $formats[] = '1234567890';
-        }
-
-        if(($casing === 'lowercase' || $casing === 'mixed') && ($alphaNumeric === 'alphaNumeric' || $alphaNumeric === 'alpha')) {
-            $formats[] = 'abcdefghjkmnpqrstuvwxyz';
-        }
-
-        if(($casing === 'uppercase' || $casing === 'mixed') && ($alphaNumeric === 'alphaNumeric' || $alphaNumeric === 'alpha')) {
-            $formats[] = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-        }
-
-        return $formats;
-    }
-
-    /**
-     * @param string $characters
-     * @return string
-     * @throws Exception
-     */
-    private function _generateUri(string $characters, int $length): string {
-        // define the charset
-        $uri = '';
-
-        for ($i = 0; $i < $length; $i++) {
-            $position = random_int(0, strlen($characters) - 1);
-            $uri .= $characters[$position];
-        }
-
-        return $uri;
-    }
-
-    private function _fetchUris(): Collection
-    {
-        $query = (new Query)
-            ->from('{{%shortlink_routes}}');
-
-        return $query->collect();
-    }
-
-    /**
      * @throws InvalidConfigException
      * @throws \yii\base\Exception
      */
@@ -332,6 +274,9 @@ class ShortlinkService extends Component
 
             $httpCode = $redirect['httpCode'];
 
+            // Increase the stats
+            $this->incrementStatistics($redirect, true);
+
             // add query string redirects in here
             if (Shortlink::$settings->redirectQueryString) {
                 $request = Craft::$app->getRequest();
@@ -341,8 +286,8 @@ class ShortlinkService extends Component
                 }
             }
 
-            // Increment the statistics
-            // Shortlink::$plugin->statistics->incrementStatistics($redirect['shortlinkUri'], true);
+            // Sanitize the url
+            $destination = UrlHelper::sanitizeUrl($destination);
 
             $response->redirect($destination, $httpCode)->send();
             try {
@@ -404,5 +349,96 @@ class ShortlinkService extends Component
         }
 
         return false;
+    }
+
+    /**
+     * Increment the hit count of the shortlink
+     *
+     * @param ?array $redirect
+     * @param bool $handled
+     * @param null $siteId
+     */
+    public function incrementStatistics(?array $redirect, bool $handled = false, $siteId = null): void
+    {
+        $shortlink = ShortlinkElement::findOne($redirect['id']);
+        $shortlink->hitCount++;
+        $shortlink->lastUsed = Db::prepareDateForDb(new DateTime());
+        Craft::$app->getElements()->saveElement($shortlink);
+    }
+
+    /**
+     * @param string $casing
+     * @param string $alphaNumeric
+     * @return array
+     */
+    private function _defineFormat(string $casing = 'mixed', string $alphaNumeric = 'alphaNumeric'): array {
+        // define the charset
+        $formats = [];
+
+        if($alphaNumeric === 'numeric' || $alphaNumeric === 'alphaNumeric') {
+            $formats[] = '1234567890';
+        }
+
+        if(($casing === 'lowercase' || $casing === 'mixed') && ($alphaNumeric === 'alphaNumeric' || $alphaNumeric === 'alpha')) {
+            $formats[] = 'abcdefghjkmnpqrstuvwxyz';
+        }
+
+        if(($casing === 'uppercase' || $casing === 'mixed') && ($alphaNumeric === 'alphaNumeric' || $alphaNumeric === 'alpha')) {
+            $formats[] = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+        }
+
+        return $formats;
+    }
+
+    /**
+     * @return Collection
+     * @throws Exception
+     */
+    private function _fetchUris(): Collection
+    {
+        $query = (new Query)
+            ->from('{{%shortlink_routes}}');
+
+        return $query->collect();
+    }
+
+    /**
+     * @param string $characters
+     * @param int $length
+     * @return string
+     * @throws Exception
+     */
+    private function _generateUri(string $characters, int $length): string {
+        // define the charset
+        $uri = '';
+
+        for ($i = 0; $i < $length; $i++) {
+            $position = random_int(0, strlen($characters) - 1);
+            $uri .= $characters[$position];
+        }
+
+        return $uri;
+    }
+
+    /**
+     * @return ShortlinkElement
+     * @throws Exception
+     */
+    private function _setShortlinkFromPost(): ShortlinkElement
+    {
+        $request = Craft::$app->getRequest();
+        $shortlinkId = $request->getParam('shortlinkId');
+
+        if ($shortlinkId) {
+            $shortlink = $this->getShortlinkById($shortlinkId);
+
+            if (!$shortlink) {
+                throw new Exception (Craft::t('shortlink', 'No shortlink with the ID “{id}”', ['id' => $shortlinkId]));
+            }
+        } else {
+            $shortlink = new ShortlinkElement();
+        }
+
+        return $shortlink;
     }
 }

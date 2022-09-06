@@ -44,7 +44,7 @@
                     <span class="text-gray-600">{{- shortlink.hitCount ?? '0' -}}</span>
                 </div>
                 <div class="hide md:flex items-center col-span-2">
-                    <span class="text-gray-600">{{- shortlink.lastUsed ? shortlink.lastUsed|date('Y-m-d') : '-' -}}</span>
+                    <span class="text-gray-600">{{- shortlink.lastUsed ? shortlink.lastUsed|date('Y-m-d H:i:s') : '-' -}}</span>
                 </div>
                 <div class="flex justify-end">
                     <a href="{{- cpUrl('shortlink/static-shortlinks/edit/'~shortlink.id) -}}" class="inline-flex items-center justify-center w-8 h-8 text-gray-800">

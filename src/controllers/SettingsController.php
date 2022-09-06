@@ -132,10 +132,7 @@ class SettingsController extends Controller
         $templateTitle = Craft::t('shortlink', 'Static Shortlinks');
         $shortlink = ShortlinkElement::findOne($shortlinkId);
 
-        //Craft::dd($shortlinkId);
-
         if (!$shortlink) {
-            //Craft::dd($shortlink);
             throw new NotFoundHttpException(Craft::t('shortlink', 'Shortlink does not exist'));
         }
 

@@ -28,7 +28,7 @@ class ShortlinkElement extends Element
     public ?string $destination = null;
     public ?string $httpCode = null;
     public ?string $hitCount = null;
-    public ?DateTime $lastUsed = null;
+    public ?string $lastUsed = null;
     public string $shortlinkStatus = self::STATUS_ACTIVE;
 
     // Static Methods
