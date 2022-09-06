@@ -60,7 +60,8 @@ class ShortlinkService extends Component
     public function getShortLink(Entry $element): array|string|null
     {
         $shortlink = ShortlinkElement::findOne(['ownerId' => $element->id]);
-        if (!$shortlink) {
+
+        if ($shortlink) {
             return $shortlink->shortlinkUri;
         }
 
