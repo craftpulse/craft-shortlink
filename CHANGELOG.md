@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.0.0-beta.6 - 2022-09-06
+
+### Changed
+- improved fallback for shortlink ID
+
 ## 4.0.0-beta.5 - 2022-09-06
 
 ### Fixed
