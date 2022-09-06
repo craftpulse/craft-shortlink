@@ -36,6 +36,16 @@ class SettingsController extends Controller
      */
     public function actionPlugin(): Response
     {
+        // Get site options
+        $siteOptions = [];
+
+        foreach (Craft::$app->getSites()->getAllSites() as $site) {
+            $siteOptions[] = [
+                'value' => $site->id,
+                'label' => $site->name,
+            ];
+        }
+
         $variables = [];
         $pluginName = Shortlink::$settings->pluginName;
         $templateTitle = Craft::t('shortlink', 'Plugin Settings');
@@ -45,6 +55,7 @@ class SettingsController extends Controller
         $variables['title'] = $templateTitle;
         $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
         $variables['selectedSubnavItem'] = 'plugin';
+        $variables['siteOptions'] = $siteOptions;
         $variables['settings'] = Shortlink::$settings;
 
         // Render the template
@@ -63,10 +74,7 @@ class SettingsController extends Controller
         $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
         $variables['selectedSubnavItem'] = 'dashboard';
         $variables['currentSiteId'] = Craft::$app->getSites()->getCurrentSite()->id;
-        $variables['shortlinks'] = ShortlinkRecord::findAll(
-            [
-                'ownerId' => ':notempty:',
-            ]);
+        $variables['shortlinks'] = ShortlinkRecord::find()->where(['not', ['ownerId' => null]])->all();
 
         // Render the template
         return $this->renderTemplate('shortlink/dashboard', $variables);

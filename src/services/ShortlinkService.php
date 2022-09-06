@@ -220,6 +220,8 @@ class ShortlinkService extends Component
         $shortlink->httpCode = $post['redirectType'] ?? null;
         $shortlink->shortlinkStatus = ShortlinkElement::STATUS_ACTIVE;
 
+
+
         if(!ElementHelper::isDraftOrRevision($entry)) {
             $shortlink->ownerId = $entry->id;
             $shortlink->ownerRevisionId = null;

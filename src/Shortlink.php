@@ -391,7 +391,7 @@ class Shortlink extends Plugin
         );
     }
 
-    private function _getShortlinkFromContext($entry): ShortlinkElement
+    private function _getShortlinkFromContext($entry): ?ShortlinkElement
     {
         // Get existing shortlink
         $ownerId = $entry->id ?? ':empty:';

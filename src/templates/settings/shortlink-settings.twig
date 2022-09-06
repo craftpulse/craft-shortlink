@@ -28,6 +28,17 @@
 
 {% set docs = 'https://percipio.london/plugins/shortlink' %}
 {% set siteColumn = [] %}
+{% if craft.app.getIsMultiSite() %}
+    {% set allSiteOptions = [{value: '', label: 'All Sites'|t('shortlink')}]|merge(siteOptions) %}
+    {% set siteColumn = {
+        siteId: {
+            type: 'select',
+            heading: 'Site'|t('blitz'),
+            options: allSiteOptions,
+            thin: true,
+        }
+    } %}
+{% endif %}
 
 {% block actionButton %}
 
@@ -47,12 +58,13 @@
         <div class="flex">
             <div class="flex-grow">
                 {% set cols = siteColumn|merge({
-                    uriPattern: {
-                        type: 'singleline',
+                    shortlinkUrl: {
+                        type: 'autosuggest',
                         heading: 'Shortlink URL'|t('shortlink'),
                         placeholder: "Enter your shortlink site url."|t('shortlink'),
                         code: true,
                         info: 'The shortlink URL that can be used to redirect to your entries.',
+                        suggestEnvVars: true,
                     }
                 }) %}
 
