@@ -14,7 +14,7 @@
         redirectLabel="{{ 'Redirect Type'|t('shortlink') }}"
         redirect-type="{{ redirectType }}"
         shortlink="{{ shortlink }}"
-        :shortlink-id="{{ shortlinkId }}"
+        {% if shortlinkId %}:shortlink-id="{{ shortlinkId }}"{% endif %}
         :show-redirect-option="{{ showRedirectOption ? 'true' : 'false' }}"
     />
 </div>

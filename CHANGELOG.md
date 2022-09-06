@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.0.0-beta.4 - 2022-09-06
+
+### Fixed
+- null check
+
 ## 4.0.0-beta.3 - 2022-09-06
 
 ### Added
