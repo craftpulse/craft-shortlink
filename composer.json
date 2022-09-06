@@ -2,7 +2,7 @@
     "name": "percipiolondon/craft-shortlink",
     "description": "This Craft CMS plugin adds support to generate an unique url short link",
     "type": "craft-plugin",
-    "version": "4.0.0-beta.1",
+    "version": "4.0.0-beta.2",
     "keywords": [
         "craft",
         "cms",
