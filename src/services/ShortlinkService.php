@@ -23,6 +23,7 @@ use Throwable;
 use yii\base\ExitException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
+use yii\caching\TagDependency;
 use yii\web\NotFoundHttpException;
 
 /**
@@ -36,7 +37,8 @@ class ShortlinkService extends Component
     // Constants
     // ==================
 
-    const CACHE_KEY = 'shortlink_redirect_';
+    public const CACHE_KEY = 'shortlink_redirect_';
+    public const GLOBAL_ROUTES_CACHE_TAG = 'shortlink_routes';
 
     // Protected Properties
     // =========================================================================
@@ -141,19 +143,37 @@ class ShortlinkService extends Component
      */
     public function findShortlinkMatch(string $path, $siteId = null): ?array
     {
-        // Need to add multisite functionality
-        // needs to search with queryString if nothing returned try without query string
-        $redirect = $this->getShortlinkRedirect($path, $siteId);
-        // Retry again without QueryString attached if result is null;
-        if(!$redirect) {
-            $redirect = $this->getShortlinkRedirect(UrlHelper::stripQueryString($path), $siteId);
-        }
-        // Retry again by fetching the static redirects
-        if(!$redirect) {
-            $redirect = $this->getStaticShortlinkRedirect(UrlHelper::stripQueryString($path), $siteId);
+        // Search for it in the cache
+        $redirect = $this->getRedirectFromCache($path);
+        if($redirect) {
+            $this->saveRedirectToCache($path, $redirect);
+
+            return $redirect;
         }
 
-        return $redirect;
+        // Search shortlink elements
+        $redirect = $this->getShortlinkRedirect($path, $siteId);
+
+        if($redirect) {
+            $this->saveRedirectToCache($path, $redirect);
+            return $redirect;
+        }
+
+        // Search without the querystring
+        $redirect = $this->getShortlinkRedirect(UrlHelper::stripQueryString($path), $siteId);
+        if($redirect) {
+            $this->saveRedirectToCache($path, $redirect);
+            return $redirect;
+        }
+
+        // Search the static shortlinks
+        $redirect = $this->getStaticShortlinkRedirect(UrlHelper::stripQueryString($path), $siteId);
+        if($redirect) {
+            $this->saveRedirectToCache($path, $redirect);
+            return $redirect;
+        }
+
+        return null;
     }
 
     /**
@@ -352,6 +372,54 @@ class ShortlinkService extends Component
     }
 
     /**
+     * @param string $path
+     *
+     * @return bool|array
+     */
+    public function getRedirectFromCache(string $path): bool|array
+    {
+        $cache = Craft::$app->getCache();
+        $cacheKey = $this::CACHE_KEY . md5($path);
+        $redirect = $cache->get($cacheKey);
+        Craft::info(
+            Craft::t(
+                'shortlink',
+                'Cached redirect hit for {path}',
+                ['path' => $path]
+            ),
+            __METHOD__
+        );
+
+        return $redirect;
+    }
+
+    /**
+     * @param string $path
+     * @param array $redirect
+     */
+    public function saveRedirectToCache(string $path, array $redirect): void
+    {
+        $cache = Craft::$app->getCache();
+        $cacheKey = $this::CACHE_KEY . md5($path);
+
+        // Create the dependency tags
+        $dependency = new TagDependency([
+            'tags' => [
+                $this::GLOBAL_ROUTES_CACHE_TAG
+            ]
+        ]);
+        $cache->set($cacheKey, $redirect, null, $dependency);
+        Craft::info(
+            Craft::t(
+                'shortlink',
+                'Cached redirect saved for {path}',
+                ['path' => $path]
+            ),
+            __METHOD__
+        );
+    }
+
+    /**
      * Increment the hit count of the shortlink
      *
      * @param ?array $redirect
@@ -363,7 +431,9 @@ class ShortlinkService extends Component
         $shortlink = ShortlinkElement::findOne($redirect['id']);
         $shortlink->hitCount++;
         $shortlink->lastUsed = Db::prepareDateForDb(new DateTime());
-        Craft::$app->getElements()->saveElement($shortlink);
+        try {
+            Craft::$app->getElements()->saveElement($shortlink);
+        } catch (ElementNotFoundException | Exception | Throwable $e) {}
     }
 
     /**
