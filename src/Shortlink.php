@@ -384,7 +384,7 @@ class Shortlink extends Plugin
             'currentSiteId' => $element->siteId ?? 0,
             'redirectType' => self::$settings->redirectType,
             'shortlink' => $shortlink->shortlinkUri ?? self::getInstance()->shortlinks->generateShortlink(),
-            'shortlinkId' => $shortlink->id ?? null,
+            'shortlinkId' => $shortlink->id ?? 0,
             'showRedirectOption' => $user->checkPermission('shortlink:entry-redirect'),
         ];
         return PluginTemplate::renderPluginTemplate(

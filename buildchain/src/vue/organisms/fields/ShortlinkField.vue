@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+
 interface Props {
     allowCustom: boolean
     label?: string
@@ -9,12 +11,14 @@ interface Props {
     showRedirectOption: boolean
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
     label: 'Shortlink',
     shortlink: '',
     shortlinkId: null,
     redirectLabel: 'Redirect Type',
 })
+
+const sanitisedShortlinkId = computed(() => props.shortlinkId === 0 ? null : props.shortlinkId)
 </script>
 
 <template>
@@ -92,7 +96,7 @@ withDefaults(defineProps<Props>(), {
     <input
       type="hidden"
       name="shortlinkId"
-      :value="shortlinkId"
+      :value="sanitisedShortlinkId"
     >
   </div>
 </template>
