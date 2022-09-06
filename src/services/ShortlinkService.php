@@ -56,20 +56,6 @@ class ShortlinkService extends Component
 
     /**
      * @throws ExitException
-     */
-    public function getShortLink(Entry $element): array|string|null
-    {
-        $shortlink = ShortlinkElement::findOne(['ownerId' => $element->id]);
-
-        if ($shortlink) {
-            return $shortlink->shortlinkUri;
-        }
-
-        return $this->generateShortlink();
-    }
-
-    /**
-     * @throws ExitException
      * @throws Exception
      */
     public function generateShortlink(): array|string|null
@@ -248,12 +234,20 @@ class ShortlinkService extends Component
     {
         $session = Craft::$app->getSession();
 
-        $shortlink = $this->_setShortlinkFromPost();
+        if(!ElementHelper::isDraftOrRevision($entry)) {
+            $shortlink = ShortlinkElement::findOne(['ownerId' => $entry->id]);
+        } else {
+            $shortlink = ShortlinkElement::findOne(['ownerRevisionId' => $entry->id]);
+        }
+
+        if(is_null($shortlink)) {
+            $shortlink = new ShortlinkElement();
+        }
+
+        //$shortlink = $this->_setShortlinkFromPost();
         $shortlink->shortlinkUri = $post['shortlinkUri'] ?? null;
         $shortlink->httpCode = $post['redirectType'] ?? null;
         $shortlink->shortlinkStatus = ShortlinkElement::STATUS_ACTIVE;
-
-
 
         if(!ElementHelper::isDraftOrRevision($entry)) {
             $shortlink->ownerId = $entry->id;
@@ -262,6 +256,8 @@ class ShortlinkService extends Component
             $shortlink->ownerId = null;
             $shortlink->ownerRevisionId = $entry->id;
         }
+
+        Craft::warning('Shortlink ID: ' . $shortlink->id . ' / Owner ID: ' . $shortlink->ownerId . ' / Owner Revision ID: ' . $shortlink->ownerRevisionId, __METHOD__);
 
         if (!Craft::$app->getElements()->saveElement($shortlink)) {
             $session->setError(Craft::t('shortlink', 'Could not save the shortlink.'));

@@ -11,6 +11,7 @@ use craft\events\ModelEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\services\Elements;
 use craft\services\Plugins;
@@ -373,21 +374,22 @@ class Shortlink extends Plugin
     protected function renderSidebar(Entry $entry): string
     {
         $user = Craft::$app->getUser();
-        $shortlink = self::getInstance()->shortlinks->getShortlink($entry);
         // if element is a duplicate regenerate, fire before save?
-        if($entry->duplicateOf) {
+        /*if($entry->duplicateOf) {
             $shortlink = self::getInstance()->shortlinks->getShortlink($entry);
-        }
+        }*/
+        $shortlink = $this->_getShortlinkFromContext($entry);
+        $shortlinkVars = [
+            'allowCustom' => self::$settings->allowCustom,
+            'currentSiteId' => $element->siteId ?? 0,
+            'redirectType' => self::$settings->redirectType,
+            'shortlink' => $shortlink->shortlinkUri ?? self::getInstance()->shortlinks->generateShortlink(),
+            'shortlinkId' => $shortlink->id ?? null,
+            'showRedirectOption' => $user->checkPermission('shortlink:entry-redirect'),
+        ];
         return PluginTemplate::renderPluginTemplate(
             '_sidebars/entry-shortlink.twig',
-            [
-                'allowCustom' => self::$settings->allowCustom,
-                'currentSiteId' => $element->siteId ?? 0,
-                'redirectType' => self::$settings->redirectType,
-                'shortlink' => $shortlink,
-                'shortlinkId' => $this->_getShortlinkFromContext($entry)->id,
-                'showRedirectOption' => $user->checkPermission('shortlink:entry-redirect'),
-            ]
+            $shortlinkVars
         );
     }
 
@@ -396,9 +398,16 @@ class Shortlink extends Plugin
         // Get existing shortlink
         $ownerId = $entry->id ?? ':empty:';
 
+        if(!ElementHelper::isDraftOrRevision($entry)) {
+            return ShortlinkElement::find()
+                ->ownerId($ownerId)
+                ->one();
+        }
+
         return ShortlinkElement::find()
-            ->ownerId($ownerId)
+            ->ownerRevisionId($ownerId)
             ->one();
+
     }
 
 }
