@@ -121,7 +121,7 @@ class ShortlinkService extends Component
 
             // check if our hostname is not one of the existing Craft sites, if so redirect
             // TODO add !array_intersect
-            if(array_intersect($needle, $baseUrls)) {
+            if(!array_intersect($needle, $baseUrls)) {
                 // check if query string should be stripped or not
                 if (!Shortlink::$settings->redirectQueryString) {
                     $path = UrlHelper::stripQueryString($path);

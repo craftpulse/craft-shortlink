@@ -29,7 +29,11 @@
                     <span class="text-gray-600">{{- shortlink.shortlinkUri -}}</span>
                 </div>
                 <div class="col-span-3 flex items-center">
-                    <span class="text-gray-600 break-all">{{- shortlink.destination -}}</span>
+                    {% set entry = craft.entries().id(shortlink.ownerId).one() %}
+                    <span class="text-gray-600 break-all">
+                        <a class="go" href="{{- entry.cpEditUrl -}}" title="{{- entry.title -}}" target="_blank" rel="noopener">{{- entry.title -}}</a>
+
+                    </span>
                 </div>
                 <div class="hide md:flex items-center">
                     <span class="text-gray-600">{{- shortlink.httpCode }}</span>
