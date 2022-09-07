@@ -241,7 +241,7 @@ class ShortlinkService extends Component
     {
         $session = Craft::$app->getSession();
 
-        $shortlink = $this->_setShortlinkFromPost();
+        $shortlink = $this->_setShortlinkFromPost($entry);
         $shortlink->shortlinkUri = $post['shortlinkUri'] ?? null;
         $shortlink->httpCode = $post['redirectType'] ?? null;
         $shortlink->shortlinkStatus = ShortlinkElement::STATUS_ACTIVE;
@@ -311,7 +311,7 @@ class ShortlinkService extends Component
             $behavior = Shortlink::$settings->redirectBehavior;
 
             match ($behavior) {
-                '404' => $this->doErrorRedirect(),
+                '404' => $path === '/' ? $this->doHomepageRedirect($host) : $this->doErrorRedirect(),
                 'homepage' => $this->doHomepageRedirect($host),
             };
         }
@@ -329,7 +329,12 @@ class ShortlinkService extends Component
         } catch (InvalidRouteException | \yii\console\Exception $e) {
             Craft::error($e->getMessage(), __METHOD__);
         }
-        $response->redirect()->send();
+        //$response->redirect()->send();
+        try {
+            Craft::$app->end();
+        } catch (ExitException $e) {
+            Craft::error($e->getMessage(), __METHOD__);
+        }
 
         return false;
     }
@@ -358,6 +363,11 @@ class ShortlinkService extends Component
             // only handles main site redirects for now
             $destination = UrlHelper::siteUrl('/', null, null, null);
             $response->redirect($destination)->send();
+            try {
+                Craft::$app->end();
+            } catch (ExitException $e) {
+                Craft::error($e->getMessage(), __METHOD__);
+            }
         }
 
         return false;
