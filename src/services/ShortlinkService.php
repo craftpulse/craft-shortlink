@@ -89,12 +89,14 @@ class ShortlinkService extends Component
         $request = Craft::$app->getRequest();
         // Only handle site requests, no live previews or console requests
         if ($request->getIsSiteRequest() && !$request->getIsLivePreview() && !$request->getIsConsoleRequest() && !$request->getIsCpRequest()) {
-                $host = urldecode($request->getHostInfo());
-                $path = urldecode($request->getUrl());
-                $url = urldecode($request->getAbsoluteUrl());
+            $host = urldecode($request->getHostInfo());
+            $path = urldecode($request->getUrl());
+            $url = urldecode($request->getAbsoluteUrl());
 
             $baseUrls = [];
+            $shortlinkUrls = [];
             $sites = Craft::$app->getSites()->allSites;
+            $shortlinks = Shortlink::$settings->shortlinkUrls;
 
             // host returns including trailing slash, make sure we check for that too if it's not site in the SITE_URL
             $needle = [
@@ -106,9 +108,14 @@ class ShortlinkService extends Component
                 $baseUrls[] = $site->baseUrl;
             }
 
-            // check if our hostname is not one of the existing Craft sites, if so redirect
-            // TODO add !array_intersect
-            if(!array_intersect($needle, $baseUrls)) {
+            // add all shortlinkUrls to an array to check if it's set
+            foreach($shortlinks as $shortlink) {
+                $shortlinkUrls[] = $shortlink['shortlinkUrl'];
+            }
+
+            // check if our hostname is not one of the existing Craft sites and a url from our settings, if so redirect
+            if(!array_intersect($needle, $baseUrls) && array_intersect($needle, $shortlinkUrls)) {
+
                 // check if query string should be stripped or not
                 if (!Shortlink::$settings->redirectQueryString) {
                     $path = UrlHelper::stripQueryString($path);
@@ -234,17 +241,7 @@ class ShortlinkService extends Component
     {
         $session = Craft::$app->getSession();
 
-        if(!ElementHelper::isDraftOrRevision($entry)) {
-            $shortlink = ShortlinkElement::findOne(['ownerId' => $entry->id]);
-        } else {
-            $shortlink = ShortlinkElement::findOne(['ownerRevisionId' => $entry->id]);
-        }
-
-        if(is_null($shortlink)) {
-            $shortlink = new ShortlinkElement();
-        }
-
-        //$shortlink = $this->_setShortlinkFromPost();
+        $shortlink = $this->_setShortlinkFromPost();
         $shortlink->shortlinkUri = $post['shortlinkUri'] ?? null;
         $shortlink->httpCode = $post['redirectType'] ?? null;
         $shortlink->shortlinkStatus = ShortlinkElement::STATUS_ACTIVE;
@@ -256,8 +253,6 @@ class ShortlinkService extends Component
             $shortlink->ownerId = null;
             $shortlink->ownerRevisionId = $entry->id;
         }
-
-        Craft::warning('Shortlink ID: ' . $shortlink->id . ' / Owner ID: ' . $shortlink->ownerId . ' / Owner Revision ID: ' . $shortlink->ownerRevisionId, __METHOD__);
 
         if (!Craft::$app->getElements()->saveElement($shortlink)) {
             $session->setError(Craft::t('shortlink', 'Could not save the shortlink.'));
@@ -491,18 +486,15 @@ class ShortlinkService extends Component
      * @return ShortlinkElement
      * @throws Exception
      */
-    private function _setShortlinkFromPost(): ShortlinkElement
+    private function _setShortlinkFromPost(Entry $entry): ShortlinkElement
     {
-        $request = Craft::$app->getRequest();
-        $shortlinkId = $request->getParam('shortlinkId');
-
-        if ($shortlinkId) {
-            $shortlink = $this->getShortlinkById($shortlinkId);
-
-            if (!$shortlink) {
-                throw new Exception (Craft::t('shortlink', 'No shortlink with the ID “{id}”', ['id' => $shortlinkId]));
-            }
+        if(!ElementHelper::isDraftOrRevision($entry)) {
+            $shortlink = ShortlinkElement::findOne(['ownerId' => $entry->id]);
         } else {
+            $shortlink = ShortlinkElement::findOne(['ownerRevisionId' => $entry->id]);
+        }
+
+        if(is_null($shortlink)) {
             $shortlink = new ShortlinkElement();
         }
 
