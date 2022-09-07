@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.0.0-beta.8 - 2022-09-06
+
+### Added
+- Added check to see if shortlinkUrl is set in settings, if not, do nothing.
+
 ## 4.0.0-beta.6 - 2022-09-06
 
 ### Changed
