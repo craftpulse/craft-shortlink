@@ -48,12 +48,6 @@ class ShortlinkService extends Component
      */
     protected ?array $cachedRedirects = null;
 
-    public function getShortlinkById(int $id): ?ShortlinkElement
-    {
-        /* @noinspection PhpIncompatibleReturnTypeInspection */
-        return Craft::$app->getElements()->getElementById($id, ShortlinkElement::class);
-    }
-
     /**
      * @throws ExitException
      * @throws Exception
@@ -222,9 +216,14 @@ class ShortlinkService extends Component
     public function onAfterSaveEntry(Entry $entry): void
     {
         $request = Craft::$app->getRequest();
+        $uri = $request->getBodyParam('shortlink-uri');
+
+        if($entry->duplicateOf) {
+            $uri = $this->generateShortlink();
+        }
 
         $shortlink = [
-            'shortlinkUri' => $request->getBodyParam('shortlink-uri'),
+            'shortlinkUri' => $uri,
             'redirectType' => $request->getBodyParam('shortlink-redirect-type'),
         ];
 
@@ -348,6 +347,8 @@ class ShortlinkService extends Component
         $response = Craft::$app->getResponse();
         $sites = Craft::$app->getSites()->allSites;
         $baseUrls = [];
+        $shortlinks = Shortlink::$settings->shortlinkUrls;
+
         // host returns including trailing slash, make sure we check for that too if it's not site in the SITE_URL
         $needle = [
             $host,
@@ -359,7 +360,12 @@ class ShortlinkService extends Component
             $baseUrls[] = $site->baseUrl;
         }
 
-        if(array_intersect($needle, $baseUrls)) {
+        // add all shortlinkUrls to an array to check if it's set
+        foreach($shortlinks as $shortlink) {
+            $shortlinkUrls[] = $shortlink['shortlinkUrl'];
+        }
+
+        if(!array_intersect($needle, $baseUrls) && array_intersect($needle, $shortlinkUrls)) {
             // only handles main site redirects for now
             $destination = UrlHelper::siteUrl('/', null, null, null);
             $response->redirect($destination)->send();

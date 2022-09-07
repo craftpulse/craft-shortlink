@@ -374,10 +374,6 @@ class Shortlink extends Plugin
     protected function renderSidebar(Entry $entry): string
     {
         $user = Craft::$app->getUser();
-        // if element is a duplicate regenerate, fire before save?
-        /*if($entry->duplicateOf) {
-            $shortlink = self::getInstance()->shortlinks->getShortlink($entry);
-        }*/
         $shortlink = $this->_getShortlinkFromContext($entry);
         $shortlinkVars = [
             'allowCustom' => self::$settings->allowCustom,
