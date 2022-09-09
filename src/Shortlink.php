@@ -304,7 +304,6 @@ class Shortlink extends Plugin
                 self::getInstance()->shortlinks->onAfterSaveEntry($entry);
             }
         );
-
     }
 
     protected function installGlobalEventListeners(): void
@@ -375,14 +374,19 @@ class Shortlink extends Plugin
     {
         $user = Craft::$app->getUser();
         $shortlink = $this->_getShortlinkFromContext($entry);
+
+        $request = Craft::$app->getRequest();
+
+        //set vars from request if exists, otherwise fetch them
         $shortlinkVars = [
-            'allowCustom' => self::$settings->allowCustom,
+            'allowCustom' => $request->getBodyParam('shortlink-allow-custom') ?? self::$settings->allowCustom,
             'currentSiteId' => $element->siteId ?? 0,
-            'redirectType' => self::$settings->redirectType,
-            'shortlink' => $shortlink->shortlinkUri ?? self::getInstance()->shortlinks->generateShortlink(),
-            'shortlinkId' => $shortlink->id ?? 0,
-            'showRedirectOption' => $user->checkPermission('shortlink:entry-redirect'),
+            'redirectType' => $request->getBodyParam('shortlink-redirect-type') ?? self::$settings->redirectType,
+            'shortlink' => $request->getBodyParam('shortlink-uri') ?? $shortlink->shortlinkUri ?? self::getInstance()->shortlinks->generateShortlink(),
+            'shortlinkId' => $request->getBodyParam('shortlinkId') ?? $shortlink->id ?? 0,
+            'showRedirectOption' => $request->getBodyParam('shortlink-show-redirect-option') ?? $user->checkPermission('shortlink:entry-redirect'),
         ];
+
         return PluginTemplate::renderPluginTemplate(
             '_sidebars/entry-shortlink.twig',
             $shortlinkVars
