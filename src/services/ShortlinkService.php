@@ -37,7 +37,13 @@ class ShortlinkService extends Component
     // Constants
     // ==================
 
+    /**
+     *
+     */
     public const CACHE_KEY = 'shortlink_redirect_';
+    /**
+     *
+     */
     public const GLOBAL_ROUTES_CACHE_TAG = 'shortlink_routes';
 
     // Protected Properties
@@ -207,6 +213,18 @@ class ShortlinkService extends Component
         return $query->one();
     }
 
+    public function onAfterDuplicateEntry(Entry $entry): void
+    {
+        $request = Craft::$app->getRequest();
+        $uri = $this->generateShortlink();
+        $shortlink = [
+            'shortlinkUri' => $uri,
+            'redirectType' => $request->getBodyParam('shortlink-redirect-type') ?? Shortlink::$plugin->settings->redirectType ?? '301',
+        ];
+
+        $this->saveShortlink($entry, $shortlink);
+    }
+
     /**
      * @param Entry $entry
      * @throws ElementNotFoundException
@@ -218,13 +236,14 @@ class ShortlinkService extends Component
         $request = Craft::$app->getRequest();
         $uri = $request->getBodyParam('shortlink-uri');
 
-        if($entry->duplicateOf) {
+        if(is_null($uri)) {
+            Craft::warning("shortlink debug: this is a duplicate");
             $uri = $this->generateShortlink();
         }
 
         $shortlink = [
             'shortlinkUri' => $uri,
-            'redirectType' => $request->getBodyParam('shortlink-redirect-type'),
+            'redirectType' => $request->getBodyParam('shortlink-redirect-type') ?? Shortlink::$plugin->settings->redirectType ?? '301',
         ];
 
         $this->saveShortlink($entry, $shortlink);
@@ -318,6 +337,9 @@ class ShortlinkService extends Component
         return false;
     }
 
+    /**
+     * @return bool
+     */
     public function doErrorRedirect(): bool
     {
         $response = Craft::$app->getResponse();
@@ -504,10 +526,10 @@ class ShortlinkService extends Component
      */
     private function _setShortlinkFromPost(Entry $entry): ShortlinkElement
     {
-        if(!ElementHelper::isDraftOrRevision($entry)) {
-            $shortlink = ShortlinkElement::findOne(['ownerId' => $entry->id]);
+        if(ElementHelper::isDraftOrRevision($entry)) {
+            $shortlink = ShortlinkElement::findOne(['ownerRevisionId' => $entry->id ?? null]);
         } else {
-            $shortlink = ShortlinkElement::findOne(['ownerRevisionId' => $entry->id]);
+            $shortlink = ShortlinkElement::findOne($entry->id ?? null);
         }
 
         if(is_null($shortlink)) {
@@ -515,5 +537,26 @@ class ShortlinkService extends Component
         }
 
         return $shortlink;
+    }
+
+    /**
+     * @param $entry
+     * @return ShortlinkElement|null
+     */
+    private function _getShortlinkFromContext($entry): ?ShortlinkElement
+    {
+        // Get existing shortlink
+        $ownerId = $entry->id ?? ':empty:';
+
+        if(!ElementHelper::isDraftOrRevision($entry)) {
+            return ShortlinkElement::find()
+                ->ownerId($ownerId)
+                ->one();
+        }
+
+        return ShortlinkElement::find()
+            ->ownerRevisionId($ownerId)
+            ->one();
+
     }
 }
