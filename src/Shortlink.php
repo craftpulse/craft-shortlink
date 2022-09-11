@@ -11,10 +11,12 @@ use craft\events\ModelEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\events\RevisionEvent;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\services\Elements;
 use craft\services\Plugins;
+use craft\services\Revisions;
 use craft\services\UserPermissions;
 use craft\web\twig\variables\CraftVariable;
 use craft\web\UrlManager;
@@ -299,12 +301,40 @@ class Shortlink extends Plugin
             Entry::class,
             Entry::EVENT_AFTER_SAVE,
             function (ModelEvent $event) {
-                /** @var Entry $entry */
+
                 $entry = $event->sender;
-                if (($event->sender->duplicateOf && $event->sender->getIsCanonical() && !$event->sender->updatingFromDerivative)) {
+
+                if ($entry->updatingFromDerivative) {
+                    return;
+                }
+
+                /** @var Entry $entry */
+                if (($event->sender->duplicateOf && $event->sender->getIsCanonical())) {
                     self::getInstance()->shortlinks->onAfterDuplicateEntry($entry);
                 } else {
                     self::getInstance()->shortlinks->onAfterSaveEntry($entry);
+                }
+            }
+        );
+
+        Event::on(
+            Revisions::class,
+            Revisions::EVENT_BEFORE_REVERT_TO_REVISION,
+            function (RevisionEvent $event) {
+
+                $shortlink = ShortlinkElement::findOne(['ownerRevisionId' => $event->revision->id]);
+                $prevShortlink = ShortlinkElement::findOne(['ownerId' => $event->canonical->id]);
+
+                if (!is_null($prevShortlink)) {
+                    $prevShortlink->ownerRevisionId = $event->revision->id;
+                    $prevShortlink->ownerId = null;
+                    Craft::$app->getElements()->saveElement($prevShortlink);
+                }
+
+                if (!is_null($shortlink)) {
+                    $shortlink->ownerRevisionId = null;
+                    $shortlink->ownerId = $event->canonical->id;
+                    Craft::$app->getElements()->saveElement($shortlink);
                 }
             }
         );

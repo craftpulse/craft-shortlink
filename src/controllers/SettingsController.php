@@ -165,7 +165,7 @@ class SettingsController extends Controller
             throw new NotFoundHttpException(Craft::t('shortlink', 'Shortlink cannot be deleted'));
         }
 
-        return $this->redirect('/admin/shortlink/static-shortlinks');
+        return $this->redirect('shortlink/static-shortlinks');
     }
 
     /**
@@ -195,7 +195,7 @@ class SettingsController extends Controller
         $success = Craft::$app->getElements()->saveElement($shortlink);
 
         if ($success) {
-            return $this->redirect('/admin/shortlink/static-shortlinks');
+            return $this->redirect('shortlink/static-shortlinks');
         }
 
         $variables = [];

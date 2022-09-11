@@ -213,10 +213,23 @@ class ShortlinkService extends Component
         return $query->one();
     }
 
+    /**
+     * @param Entry $entry
+     * @throws ElementNotFoundException
+     * @throws MissingComponentException
+     * @throws Throwable
+     */
     public function onAfterDuplicateEntry(Entry $entry): void
     {
         $request = Craft::$app->getRequest();
         $uri = $this->generateShortlink();
+
+        if(is_null($uri)) {
+            $uri = $this->generateShortlink();
+        }
+
+        Craft::warning('Shortlink debug: saves shorlink into ' . $uri);
+
         $shortlink = [
             'shortlinkUri' => $uri,
             'redirectType' => $request->getBodyParam('shortlink-redirect-type') ?? Shortlink::$plugin->settings->redirectType ?? '301',
@@ -237,9 +250,10 @@ class ShortlinkService extends Component
         $uri = $request->getBodyParam('shortlink-uri');
 
         if(is_null($uri)) {
-            Craft::warning("shortlink debug: this is a duplicate");
             $uri = $this->generateShortlink();
         }
+
+        Craft::warning('Shortlink debug: saves shorlink into ' . $uri);
 
         $shortlink = [
             'shortlinkUri' => $uri,
@@ -263,6 +277,8 @@ class ShortlinkService extends Component
         $shortlink->shortlinkUri = $post['shortlinkUri'] ?? null;
         $shortlink->httpCode = $post['redirectType'] ?? null;
         $shortlink->shortlinkStatus = ShortlinkElement::STATUS_ACTIVE;
+
+        //$request->getIsSiteRequest() && !$request->getIsConsoleRequest()
 
         if(!ElementHelper::isDraftOrRevision($entry)) {
             $shortlink->ownerId = $entry->id;
@@ -529,7 +545,7 @@ class ShortlinkService extends Component
         if(ElementHelper::isDraftOrRevision($entry)) {
             $shortlink = ShortlinkElement::findOne(['ownerRevisionId' => $entry->id ?? null]);
         } else {
-            $shortlink = ShortlinkElement::findOne($entry->id ?? null);
+            $shortlink = ShortlinkElement::findOne(['ownerId' => $entry->id ?? null]);
         }
 
         if(is_null($shortlink)) {
