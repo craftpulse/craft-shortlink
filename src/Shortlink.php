@@ -301,7 +301,11 @@ class Shortlink extends Plugin
             function (ModelEvent $event) {
                 /** @var Entry $entry */
                 $entry = $event->sender;
-                self::getInstance()->shortlinks->onAfterSaveEntry($entry);
+                if (($event->sender->duplicateOf && $event->sender->getIsCanonical() && !$event->sender->updatingFromDerivative)) {
+                    self::getInstance()->shortlinks->onAfterDuplicateEntry($entry);
+                } else {
+                    self::getInstance()->shortlinks->onAfterSaveEntry($entry);
+                }
             }
         );
     }

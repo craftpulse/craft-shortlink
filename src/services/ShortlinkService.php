@@ -213,6 +213,18 @@ class ShortlinkService extends Component
         return $query->one();
     }
 
+    public function onAfterDuplicateEntry(Entry $entry): void
+    {
+        $request = Craft::$app->getRequest();
+        $uri = $this->generateShortlink();
+        $shortlink = [
+            'shortlinkUri' => $uri,
+            'redirectType' => $request->getBodyParam('shortlink-redirect-type') ?? Shortlink::$plugin->settings->redirectType ?? '301',
+        ];
+
+        $this->saveShortlink($entry, $shortlink);
+    }
+
     /**
      * @param Entry $entry
      * @throws ElementNotFoundException
@@ -224,7 +236,7 @@ class ShortlinkService extends Component
         $request = Craft::$app->getRequest();
         $uri = $request->getBodyParam('shortlink-uri');
 
-        if(is_null($uri) || ($entry->duplicateOf && !ElementHelper::isDraftOrRevision($entry))) {
+        if(is_null($uri)) {
             Craft::warning("shortlink debug: this is a duplicate");
             $uri = $this->generateShortlink();
         }
@@ -519,12 +531,6 @@ class ShortlinkService extends Component
         } else {
             $shortlink = ShortlinkElement::findOne($entry->id ?? null);
         }
-
-//        if(!ElementHelper::isDraftOrRevision($entry)) {
-//            $shortlink = ShortlinkElement::findOne(['ownerId' => $entry->id]);
-//        } else {
-//            $shortlink = ShortlinkElement::findOne(['ownerRevisionId' => $entry->id]);
-//        }
 
         if(is_null($shortlink)) {
             $shortlink = new ShortlinkElement();
