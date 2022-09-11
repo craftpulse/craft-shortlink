@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.0.0-beta.11 - 2022-09-07
+
+### Fixed
+- Fixed a new issue where the shortlink wouldn't regenerate on a duplicated entry
+- Fixed the re-genration when a revision was created
+
 ## 4.0.0-beta.10 - 2022-09-07
 
 ### Fixed
