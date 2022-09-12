@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.0.0-beta.14 - 2022-09-12
+
+### Fixed
+- Fixed bug when a draft was created and save after, the shortlink wouldn't update
+
 ## 4.0.0-beta.13 - 2022-09-12
 
 ### Fixed

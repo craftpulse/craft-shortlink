@@ -304,41 +304,44 @@ class Shortlink extends Plugin
                 /** @var Entry $entry */
                 $entry = $event->sender;
 
-                Craft::info("Shortlink after save ");
+//                if ($entry->updatingFromDerivative) {
+//                    return;
+//                }
 
-                if ($entry->updatingFromDerivative) {
-                    return;
-                }
-
-                if (($event->sender->duplicateOf && $event->sender->getIsCanonical())) {
+                if (($event->sender->duplicateOf && $event->sender->getIsCanonical() && !$event->sender->updatingFromDerivative)) {
                     self::getInstance()->shortlinks->onAfterDuplicateEntry($entry);
                 } else {
                     self::getInstance()->shortlinks->onAfterSaveEntry($entry);
                 }
+
+//                elseif
+//                    ($entry->updatingFromDerivative){
+//                    Craft::info('Shortlink: updatingFromDerivative');
+//                }
             }
         );
 
-        Event::on(
-            Revisions::class,
-            Revisions::EVENT_BEFORE_REVERT_TO_REVISION,
-            function (RevisionEvent $event) {
-
-                $shortlink = ShortlinkElement::findOne(['ownerRevisionId' => $event->revision->id]);
-                $prevShortlink = ShortlinkElement::findOne(['ownerId' => $event->canonical->id]);
-
-                if (!is_null($prevShortlink)) {
-                    $prevShortlink->ownerRevisionId = $event->revision->id;
-                    $prevShortlink->ownerId = null;
-                    Craft::$app->getElements()->saveElement($prevShortlink);
-                }
-
-                if (!is_null($shortlink)) {
-                    $shortlink->ownerRevisionId = null;
-                    $shortlink->ownerId = $event->canonical->id;
-                    Craft::$app->getElements()->saveElement($shortlink);
-                }
-            }
-        );
+//        Event::on(
+//            Revisions::class,
+//            Revisions::EVENT_BEFORE_REVERT_TO_REVISION,
+//            function (RevisionEvent $event) {
+//
+//                $shortlink = ShortlinkElement::findOne(['ownerRevisionId' => $event->revision->id]);
+//                $prevShortlink = ShortlinkElement::findOne(['ownerId' => $event->canonical->id]);
+//
+//                if (!is_null($prevShortlink)) {
+//                    $prevShortlink->ownerRevisionId = $event->revision->id;
+//                    $prevShortlink->ownerId = null;
+//                    Craft::$app->getElements()->saveElement($prevShortlink);
+//                }
+//
+//                if (!is_null($shortlink)) {
+//                    $shortlink->ownerRevisionId = null;
+//                    $shortlink->ownerId = $event->canonical->id;
+//                    Craft::$app->getElements()->saveElement($shortlink);
+//                }
+//            }
+//        );
     }
 
     protected function installGlobalEventListeners(): void
