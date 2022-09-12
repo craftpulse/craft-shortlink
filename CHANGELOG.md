@@ -2,7 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## 4.0.0-beta.12 - 2022-09-07
+## 4.0.0-beta.13 - 2022-09-12
+
+### Fixed
+- Fixed bug when shortlink save didn't happen after entry save
+
+## 4.0.0-beta.12 - 2022-09-11
 
 ### Fixed
 - Fixed bug when shortlink regenerated when revision put back in place

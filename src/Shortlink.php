@@ -301,14 +301,15 @@ class Shortlink extends Plugin
             Entry::class,
             Entry::EVENT_AFTER_SAVE,
             function (ModelEvent $event) {
-
+                /** @var Entry $entry */
                 $entry = $event->sender;
+
+                Craft::info("Shortlink after save ");
 
                 if ($entry->updatingFromDerivative) {
                     return;
                 }
 
-                /** @var Entry $entry */
                 if (($event->sender->duplicateOf && $event->sender->getIsCanonical())) {
                     self::getInstance()->shortlinks->onAfterDuplicateEntry($entry);
                 } else {
