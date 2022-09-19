@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.0.0-beta.16 - 2022-09-19
+
+### Removed
+- Removed the shortlinks title and hr underneath
+
 ## 4.0.0-beta.15 - 2022-09-19
 
 ### Added
