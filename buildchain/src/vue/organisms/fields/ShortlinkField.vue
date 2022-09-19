@@ -105,7 +105,11 @@ const sanitisedShortlinkId = computed(() => props.shortlinkId === 0 ? null : pro
           :key="shortlinkUrl.shortlinkUrl"
           class="value pb-1 text-xs"
         >
-          {{ shortlinkUrl.shortlinkUrl }}/{{ shortlinkInput }}
+          <a
+            :href="`${ shortlinkUrl.shortlinkUrl }/${ shortlinkInput }`"
+            :title="shortlinkUrl.shortlinkUrl"
+            target="_blank"
+          >{{ shortlinkUrl.shortlinkUrl }}/{{ shortlinkInput }}</a>
         </dd>
       </div>
     </dl>
