@@ -4,11 +4,11 @@
     "src": "src/js/shortlink.ts",
     "isEntry": true,
     "css": [
-      "assets/shortlink.7e03273d.css"
+      "assets/shortlink.eea22647.css"
     ]
   },
   "src/js/shortlink-field.ts": {
-    "file": "assets/shortlink-field.fbf5678c.js",
+    "file": "assets/shortlink-field.b976eba5.js",
     "src": "src/js/shortlink-field.ts",
     "isEntry": true
   }
