@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.0.0-beta.15 - 2022-09-12
+
+### Added
+- Added the preview of the shortlink urls in the sidebar
+
 ## 4.0.0-beta.14 - 2022-09-12
 
 ### Fixed
