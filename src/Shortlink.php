@@ -423,6 +423,7 @@ class Shortlink extends Plugin
             'shortlink' => $request->getBodyParam('shortlink-uri') ?? $shortlink->shortlinkUri ?? self::getInstance()->shortlinks->generateShortlink(),
             'shortlinkId' => $request->getBodyParam('shortlinkId') ?? $shortlink->id ?? 0,
             'showRedirectOption' => $request->getBodyParam('shortlink-show-redirect-option') ?? $user->checkPermission('shortlink:entry-redirect'),
+            'shortlinkUrls' => self::$settings->shortlinkUrls
         ];
 
         return PluginTemplate::renderPluginTemplate(
