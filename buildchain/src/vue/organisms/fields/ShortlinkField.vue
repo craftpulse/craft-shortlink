@@ -100,10 +100,7 @@ const sanitisedShortlinkId = computed(() => props.shortlinkId === 0 ? null : pro
         v-if="shortlinkUrls"
         class="shortlink-urls"
       >
-        <dt class="heading pb-2">
-          Shortlinks:
-        </dt>
-        <dd 
+        <dd
           v-for="shortlinkUrl in shortlinkUrls"
           :key="shortlinkUrl.shortlinkUrl"
           class="value pb-1 text-xs"
@@ -112,7 +109,6 @@ const sanitisedShortlinkId = computed(() => props.shortlinkId === 0 ? null : pro
         </dd>
       </div>
     </dl>
-    <hr>
     <input
       type="hidden"
       name="shortlinkId"
