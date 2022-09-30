@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.0.0-beta.17 - 2022-09-19
+
+### Added
+- Check for duplicate shortlinks #6
+- Check for spaces in shortlinks #7
+- Get shortlink twig filter to get a shortlink based on an entry #9
+
+### Fixed
+- Can't set a new shortlink after duplication #4
+
 ## 4.0.0-beta.16 - 2022-09-19
 
 ### Removed
