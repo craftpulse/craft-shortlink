@@ -32,6 +32,7 @@ use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
 use Twig\Error\SyntaxError;
 use yii\base\event;
+use yii\base\ModelEvent as ModelEventYii;
 
 /**
  *
@@ -290,10 +291,32 @@ class Shortlink extends Plugin
                 /* @var Entry $entry */
                 $entry = $event->sender;
                 $html = '';
-                    if ($entry->uri !== null) {
-                        $html = $this->renderSidebar($entry);
+                if ($entry->uri !== null) {
+                    $html = $this->renderSidebar($entry);
+                }
+                $event->html .= $html;
+            }
+        );
+
+
+        Event::on(
+            Entry::class,
+            Entry::EVENT_BEFORE_VALIDATE,
+            function (ModelEventYii $event) {
+                /** @var Entry $entry */
+                $entry = $event->sender;
+
+                if(!ElementHelper::isDraftOrRevision($entry)) {
+                    $shortlinkUri = Craft::$app->getRequest()->getBodyParam('shortlink-uri') ?? '';
+
+                    if ($shortlinkUri) {
+                        $shortlink = ShortlinkElement::find()->where(['not', ['ownerId' => null]])->andWhere(['shortlinkUri' => $shortlinkUri])->one();
+
+                        if (isset($shortlink)) {
+                            $entry->addError('shortlinkUri', Craft::t('shortlink','The shortlink already exists'));
+                        }
                     }
-                    $event->html .= $html;
+                }
             }
         );
 
@@ -423,7 +446,8 @@ class Shortlink extends Plugin
             'shortlink' => $request->getBodyParam('shortlink-uri') ?? $shortlink->shortlinkUri ?? self::getInstance()->shortlinks->generateShortlink(),
             'shortlinkId' => $request->getBodyParam('shortlinkId') ?? $shortlink->id ?? 0,
             'showRedirectOption' => $request->getBodyParam('shortlink-show-redirect-option') ?? $user->checkPermission('shortlink:entry-redirect'),
-            'shortlinkUrls' => self::$settings->shortlinkUrls
+            'shortlinkUrls' => self::$settings->shortlinkUrls,
+            'shortlinkErrors' => $entry->hasErrors() ? ($entry->getErrors()['shortlinkUri'] ?? []) : null
         ];
 
         return PluginTemplate::renderPluginTemplate(
