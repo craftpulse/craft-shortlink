@@ -310,6 +310,7 @@ class Shortlink extends Plugin
                     $shortlinkUri = Craft::$app->getRequest()->getBodyParam('shortlink-uri') ?? '';
 
                     if ($shortlinkUri) {
+                        // check for duplication
                         $shortlink = ShortlinkElement::find()
                             ->where(['not', ['ownerId' => null]])
                             ->andWhere(['not', ['ownerId' => $entry->id]])
@@ -317,6 +318,11 @@ class Shortlink extends Plugin
 
                         if (isset($shortlink)) {
                             $entry->addError('shortlinkUri', Craft::t('shortlink','The shortlink already exists'));
+                        }
+
+                        // check if shortlink is valid
+                        if (!preg_match('/^[a-z0-9]+(-?[a-z0-9]+)*$/i', $shortlinkUri)) {
+                            $entry->addError('shortlinkUri', Craft::t('shortlink','The shortlink is not valid'));
                         }
                     }
                 }
