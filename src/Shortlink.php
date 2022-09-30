@@ -27,6 +27,7 @@ use percipiolondon\shortlink\elements\ShortlinkElement;
 use percipiolondon\shortlink\helpers\PluginTemplate;
 use percipiolondon\shortlink\models\SettingsModel as Settings;
 use percipiolondon\shortlink\services\ShortlinkService;
+use percipiolondon\shortlink\twigextensions\ShortlinkTwigExtension;
 use percipiolondon\shortlink\variables\ShortlinkVariable;
 use Twig\Error\LoaderError;
 use Twig\Error\RuntimeError;
@@ -161,6 +162,9 @@ class Shortlink extends Plugin
                 $event->types[] = ShortlinkElement::class;
             }
         );
+
+        // Add in our Twig extensions
+        Craft::$app->view->registerTwigExtension(new ShortlinkTwigExtension());
 
         Craft::info(
             Craft::t(
