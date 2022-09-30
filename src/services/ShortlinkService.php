@@ -230,12 +230,22 @@ class ShortlinkService extends Component
 
         Craft::warning('Shortlink debug: saves shorlink into ' . $uri);
 
-        $shortlink = [
-            'shortlinkUri' => $uri,
-            'redirectType' => $request->getBodyParam('shortlink-redirect-type') ?? Shortlink::$plugin->settings->redirectType ?? '301',
-        ];
+        $shortlink = new ShortlinkElement();
+        $shortlink->shortlinkUri = $uri;
+        $shortlink->httpCode = $request->getBodyParam('shortlink-redirect-type') ?? Shortlink::$plugin->settings->redirectType ?? '301';
+        $shortlink->shortlinkStatus = ShortlinkElement::STATUS_ACTIVE;
 
-        $this->saveShortlink($entry, $shortlink);
+        if(!ElementHelper::isDraftOrRevision($entry)) {
+            $shortlink->ownerId = $entry->id;
+            $shortlink->ownerRevisionId = null;
+        } else {
+            $shortlink->ownerId = null;
+            $shortlink->ownerRevisionId = $entry->id;
+        }
+
+        if (!Craft::$app->getElements()->saveElement($shortlink)) {
+            Craft::$app->getSession()->setError(Craft::t('shortlink', 'Could not save the shortlink.'));
+        }
     }
 
     /**

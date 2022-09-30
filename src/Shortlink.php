@@ -310,7 +310,10 @@ class Shortlink extends Plugin
                     $shortlinkUri = Craft::$app->getRequest()->getBodyParam('shortlink-uri') ?? '';
 
                     if ($shortlinkUri) {
-                        $shortlink = ShortlinkElement::find()->where(['not', ['ownerId' => null]])->andWhere(['shortlinkUri' => $shortlinkUri])->one();
+                        $shortlink = ShortlinkElement::find()
+                            ->where(['not', ['ownerId' => null]])
+                            ->andWhere(['not', ['ownerId' => $entry->id]])
+                            ->andWhere(['shortlinkUri' => $shortlinkUri])->one();
 
                         if (isset($shortlink)) {
                             $entry->addError('shortlinkUri', Craft::t('shortlink','The shortlink already exists'));
