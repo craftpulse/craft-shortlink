@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.0.0-beta.18 - 2022-09-19
+
+### Fixed
+- Added a check on the handle redirect to see if the root of the shortlink domain hits, so it redirects to the homepage right away instead of looking in the shortlinks
+
 ## 4.0.0-beta.17 - 2022-09-19
 
 ### Added
