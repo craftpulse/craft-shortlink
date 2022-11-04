@@ -87,6 +87,7 @@ class ShortlinkService extends Component
     public function handleRedirect(): void
     {
         $request = Craft::$app->getRequest();
+
         // Only handle site requests, no live previews or console requests
         if ($request->getIsSiteRequest() && !$request->getIsLivePreview() && !$request->getIsConsoleRequest() && !$request->getIsCpRequest()) {
             $host = urldecode($request->getHostInfo());
@@ -103,6 +104,7 @@ class ShortlinkService extends Component
                 $host,
                 $host . '/',
             ];
+
             // add all baseUrls to an array in case of multisite
             foreach($sites as $site) {
                 $baseUrls[] = $site->baseUrl;
@@ -120,6 +122,11 @@ class ShortlinkService extends Component
                 if (!Shortlink::$settings->redirectQueryString) {
                     $path = UrlHelper::stripQueryString($path);
                     $url = UrlHelper::stripQueryString($url);
+                }
+
+                // go to the homepage if someone hits the root of the shortlink domain
+                if ($path === '/') {
+                    $this->doHomepageRedirect($host);
                 }
 
                 // Redirect if we find a match, otherwise let Craft handle it
