@@ -14,6 +14,7 @@
         redirectLabel="{{ 'Redirect Type'|t('shortlink') }}"
         redirect-type="{{ redirectType }}"
         shortlink="{{ shortlink }}"
+        :dev-mode="{{ devMode ? 'true' : 'false' }}"
         :shortlink-urls="{{ shortlinkUrls|json_encode }}"
         :shortlink-id="{{ shortlinkId }}"
         :show-redirect-option="{{ showRedirectOption ? 'true' : 'false' }}"

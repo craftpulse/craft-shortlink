@@ -54,7 +54,6 @@
     {{ redirectInput('shortlink/plugin') }}
 
     <div id="general">
-
         <div class="flex">
             <div class="flex-grow">
                 {% set cols = siteColumn|merge({
@@ -65,6 +64,11 @@
                         code: true,
                         info: 'The shortlink URL that can be used to redirect to your entries.',
                         suggestEnvVars: true,
+                    },
+                    showWhenDevmodeIsOff: {
+                        type: 'lightswitch',
+                        heading: 'Is production link'|t('shortlink'),
+                        info: "This will always show the weither the dev mode is on or off. If you switch off, it will only show when dev mode is on"|t('shortlink'),
                     }
                 }) %}
 

@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 4.0.0-beta.19 - 2022-12-07
+
+### Added
+- Added setting weather to show the shortlink when devMode is off or not
+
 ## 4.0.0-beta.18 - 2022-09-19
 
 ### Fixed
