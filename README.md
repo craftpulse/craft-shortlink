@@ -2,11 +2,11 @@
 
 A plugin to generate editable short urls from entries
 
-![Screenshot](resources/img/plugin-logo.png)
+![Shortlink](resources/img/shortlink-banner.png) 
 
 ## Requirements
 
-This plugin requires Craft CMS 3.0.0-beta.23 or later.
+This plugin requires Craft CMS 4.0.0 or later.
 
 ## Installation
 
@@ -24,6 +24,6 @@ To install the plugin, follow these instructions.
 
 ## craft-shortlink Overview
 
-Currently in alpha, do not use in production environments
+Currently in beta, do not use in production environments
 
 Brought to you by [Percipio](https://percipio.london)

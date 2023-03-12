@@ -1,0 +1,57 @@
+{%- requirePermission "shortlink:static-shortlinks" -%}
+
+{% extends 'shortlink/_layouts/shortlink-cp' %}
+{%- import '_includes/forms' as forms -%}
+
+{%- set fullPageForm = true -%}
+
+{% block actionButton %}
+    <div class="buttons">
+        <button type="submit" data-action="{{ cpUrl('shortlink/settings/static-shortlinks-save') }}" class="btn submit">{{ "Save"|t("shortlink") }}</button>
+    </div>
+{% endblock %}
+
+{%- set content -%}
+
+    <h1 class="text-xl font-semibold text-gray-900">{{ shortlink ? 'Edit' : 'New' }} Shortlink</h1>
+
+    <input type="hidden" name="action" value="shortlink/settings/static-shortlinks-save" />
+    <input type="hidden" name="shortlinkId" value="{{- shortlink ? shortlink.id : '' -}}" />
+    <input type="hidden" name="siteId" value="{{- shortlink ? shortlink.siteId : currentSite.id -}}" />
+
+    {{ forms.textField({
+        first: true,
+        label: "Shortlink URI"|t('shortlink'),
+        instructions: "Enter the shortlink without spaces and capitals"|t('shortlink'),
+        id: 'shortlinkUri',
+        name: 'shortlinkUri',
+        value: shortlink ? shortlink.shortlinkUri : '',
+        errors: errors['shortlinkUri'] ?? null,
+        autofocus: true,
+        required: true,
+    }) }}
+
+    {{ forms.textField({
+        first: true,
+        label: "Destination URL"|t('shortlink'),
+        instructions: "You can add either the slug e.g. /about-us/contact or the full URL http://domain.com/about-us/contact."|t('shortlink'),
+        id: 'destination',
+        name: 'destination',
+        value: shortlink ? shortlink.destination : '',
+        errors: errors['destination'] ?? null,
+        required: true,
+    }) }}
+
+    {{ forms.selectField({
+        label: 'Redirect behavior'|t('shortlink'),
+        instructions: 'Choose the default redirect behavior, permanent (301) or temporary (302)'|t('shortlink'),
+        id: 'httpCode',
+        name: 'httpCode',
+        value: shortlink ? shortlink.httpCode : '',
+        options: {
+            '301': '301 - Permanent'|t('shortlink'),
+            '302': '302 - Temporary'|t('shortlink'),
+        },
+        required: true,
+    }) }}
+{%- endset -%}

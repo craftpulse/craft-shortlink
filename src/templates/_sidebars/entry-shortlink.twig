@@ -1,0 +1,23 @@
+{% do view.registerAssetBundle('percipiolondon\\shortlink\\assetbundles\\shortlink\\ShortlinkAsset') %}
+{%- set tagOptions = {
+    'depends': [
+        'percipiolondon\\shortlink\\assetbundles\\shortlink\\ShortlinkAsset'
+    ]
+} -%}
+{{- craft.shortlink.register('src/js/shortlink.ts', false, tagOptions, tagOptions) -}}
+{{- craft.shortlink.register('src/js/shortlink-field.ts', false, tagOptions, tagOptions) -}}
+
+<div id="shortlink-generator">
+    <shortlink-field
+        :allow-custom="{{ allowCustom ? 'true' : 'false' }}"
+        label="{{ 'Shortlink'|t('shortlink') }}"
+        redirectLabel="{{ 'Redirect Type'|t('shortlink') }}"
+        redirect-type="{{ redirectType }}"
+        shortlink="{{ shortlink }}"
+        :dev-mode="{{ devMode ? 'true' : 'false' }}"
+        :shortlink-urls="{{ shortlinkUrls|json_encode }}"
+        :shortlink-id="{{ shortlinkId }}"
+        :show-redirect-option="{{ showRedirectOption ? 'true' : 'false' }}"
+        :errors="{{ shortlinkErrors|json_encode }}"
+    />
+</div>
