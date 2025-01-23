@@ -1,215 +1,189 @@
 <?php
+/**
+ * Shortlink plugin for Craft CMS
+ *
+ * @link      https://craft-pulse.com
+ * @copyright Copyright (c) 2025 CraftPulse
+ */
 
-namespace percipiolondon\shortlink;
+namespace craftpulse\shortlink;
 
 use Craft;
-use craft\base\Element;
+use Monolog\Formatter\LineFormatter;
+use Psr\Log\LogLevel;
+use Throwable;
+use craft\base\Model;
 use craft\base\Plugin;
-use craft\elements\Entry;
-use craft\events\DefineHtmlEvent;
-use craft\events\ModelEvent;
+use craft\events\DefineFieldLayoutFieldsEvent;
+use craft\events\PluginEvent;
+use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
-use craft\helpers\UrlHelper;
+use craft\fieldlayoutelements\TextField;
+use craft\log\MonologTarget;
+use craft\models\FieldLayout;
+use craft\services\Elements;
 use craft\services\Plugins;
 use craft\services\UserPermissions;
-use craft\web\twig\variables\CraftVariable;
+use craft\web\Application;
 use craft\web\UrlManager;
-use craft\web\View;
-use nystudio107\pluginvite\services\VitePluginService;
-use percipiolondon\shortlink\assetbundles\shortlink\ShortlinkAsset;
-use percipiolondon\shortlink\helpers\PluginTemplate;
-use percipiolondon\shortlink\models\SettingsModel as Settings;
-use percipiolondon\shortlink\services\ShortlinkService;
-use percipiolondon\shortlink\variables\ShortlinkVariable;
-use Twig\Error\LoaderError;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
-use yii\base\event;
+
+use craftpulse\shortlink\elements\Route;
+use craftpulse\shortlink\models\SettingsModel;
+use craftpulse\shortlink\services\ServicesTrait;
+
+use yii\base\Event;
+use yii\base\InvalidRouteException;
+use yii\log\Dispatcher;
+use yii\log\Logger;
 
 /**
+ * Class Shortlink
  *
-* @author    percipiolondon
-* @package   Shortlink
-* @since     1.0.0
-*
-* @property ShortlinkService $shortlinkService
-* @property VitePluginService  $vite
-* @property Settings $settings
-* @property mixed|object|null $shortlinks
-*
-*/
-
+ * @author      CraftPulse
+ * @package     Shortlink
+ * @since       1.0.0
+ *
+ * @method Settings getSettings()
+ */
 class Shortlink extends Plugin
 {
-    protected const SHORTLINK_PREVIEW_PATH = 'shortlink/sidebar/preview-shortlink';
+    // Traits
+    // =========================================================================
+
+    use ServicesTrait;
 
     // Static Properties
-    // =================
-
+    // =========================================================================
     /**
-     * @var Shortlink|null
+     * @var ?Shortlink
      */
-    public static ?Shortlink $plugin;
-
-    /**
-     * @var ShortlinkVariable|null
-     */
-    public static ?ShortlinkVariable $shortlinkVariable = null;
-
-    /**
-     * @var Settings|null
-     */
-    public static ?Settings $settings = null;
-
-    /**
-     * @var View|null
-     */
-    public static ?View $view = null;
+    public static ?Shortlink $plugin = null;
 
     // Public Properties
-    // =================
+    // =========================================================================
 
+    /**
+     * @var null|SettingsModel
+     */
+    public static ?SettingsModel $settings = null;
     /**
      * @var string
      */
     public string $schemaVersion = '1.0.0';
-
-    /**
-     * @var bool
-     */
-    public bool $hasCpSettings = true;
-
     /**
      * @var bool
      */
     public bool $hasCpSection = true;
-
-    // Static Methods
-    // ==============
-
     /**
-     * @inheritdoc
+     * @var bool
      */
-    public function __construct($id, $parent = null, array $config = [])
-    {
-        $config['components'] = [
-            'shortlink' => __CLASS__,
-            'shortlinks' => ShortlinkService::class,
-            'vite' => [
-                'class' => VitePluginService::class,
-                'assetClass' => ShortlinkAsset::class,
-                'useDevServer' => true,
-                'devServerPublic' => 'http://localhost:3751',
-                'serverPublic' => 'http://localhost:3700',
-                'errorEntry' => '/src/js/shortlink.ts',
-                'devServerInternal' => 'http://craft-shortlink-buildchain:3751',
-                'checkDevServer' => true,
-            ],
-        ];
-
-        parent::__construct($id, $parent, $config);
-    }
+    public bool $hasCpSettings = true;
+    /**
+     * @var mixed|object|null
+     */
+    public mixed $queue = null;
 
     // Public Methods
-    // ==============
+    // =========================================================================
 
     public function init(): void
     {
         parent::init();
         self::$plugin = $this;
 
-        // Initialize properties
-        self::$settings = self::$plugin->getSettings();
-        self::$view = Craft::$app->getView();
+        // Register custom log target
+        $this->registerLogTarget();
 
-        $this->name = self::$settings->pluginName;
+        $request = Craft::$app->getRequest();
+        if ($request->getIsConsoleRequest()) {
+            $this->controllerNamespace = 'craftpulse\shortlink\console\controllers';
+        }
 
-        // Install event listeners
-        $this->installEventListeners();
+        // Install our global event handlers
+        $this->installEventHandlers();
 
-        // Install global listeners
-        $this->installGlobalEventListeners();
+        // Register control panel events
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $this->registerCpUrlRules();
+            $this->registerRouteFieldLayout();
+        }
 
-        // Register variables
-        Event::on(
-            CraftVariable::class,
-            CraftVariable::EVENT_INIT,
-            function(Event $event): void {
-                /** @var CraftVariable $variable */
-                $variable = $event->sender;
-                $variable->set('shortlink', [
-                    'class' => ShortlinkVariable::class,
-                    'viteService' => $this->vite,
-                ]);
-            }
-        );
+        // Register site events
+        if (Craft::$app->getRequest()->getIsSiteRequest()) {
+            $this->registerSiteEventHandlers();
+        }
 
+        // Log that the plugin has loaded
         Craft::info(
             Craft::t(
                 'shortlink',
                 '{name} plugin loaded',
                 ['name' => $this->name]
-            ),
-            __METHOD__
+            )
         );
     }
 
-    // Protected Methods
-    // =================
-
     /**
-     * @inheritdoc
+     * Logs a message
+     * @throws Throwable
      */
-    protected function createSettingsModel(): Settings
+    public function log(string $message, array $params = [], int $type = Logger::LEVEL_INFO): void
     {
-        return new Settings();
+        $encoded_params = str_replace('\\', '', Json::encode($params));
+
+        $message = Craft::t('shortlink', $message . ' ' . $encoded_params, $params);
+
+        Craft::getLogger()->log($message, $type, 'shortlink');
     }
 
     /**
      * @inheritdoc
+     * @throws InvalidRouteException
      */
     public function getSettingsResponse(): mixed
     {
-        return Craft::$app->getResponse()->redirect(UrlHelper::cpUrl('shortlink/plugin'));
+        return Craft::$app->getResponse()->redirect('shortlink/settings');
     }
 
     /**
      * @inheritdoc
+     * @throws Throwable
      */
     public function getCpNavItem(): ?array
     {
         $subNavs = [];
         $navItem = parent::getCpNavItem();
-        /** @var User $currentUser */
-        $request = Craft::$app->getRequest();
         $currentUser = Craft::$app->getUser()->getIdentity();
 
-        // Only show sub navigation the user has permission to view
-        if ($currentUser->can('shortlink:dashboard')) {
-            $subNavs['dashboard'] = [
-                'label' => Craft::t('shortlink', 'Dashboard'),
-                'url' => 'shortlink/dashboard',
-            ];
-        }
-        if ($currentUser->can('shortlink:custom-shortlinks')) {
-            $subNavs['custom-shortlinks'] = [
-                'label' => Craft::t('shortlink', 'Custom Shortlinks'),
-                'url' => 'shortlink/custom-shortlinks',
-            ];
-        }
-
         $editableSettings = true;
-        // check against allowAdminChanges
-        if (!Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
+        $general = Craft::$app->getConfig()->getGeneral();
+
+        if (!$general->allowAdminChanges) {
             $editableSettings = false;
         }
 
-        if ($editableSettings && $currentUser->can('shortlink:plugin-settings')) {
-            $subNavs['plugin'] = [
-                'label' => Craft::t('shortlink', 'Plugin settings'),
-                'url' => 'shortlink/plugin'
+        if ($currentUser->can('shortlink:view-routes')) {
+            $subNavs['routes'] = [
+                'label' => 'Routes',
+                'url' => 'shortlink/routes',
             ];
+        }
+
+        if ($currentUser->can('shortlink:settings') && $editableSettings) {
+            $subNavs['settings'] = [
+                'label' => 'Settings',
+                'url' => 'shortlink/settings',
+            ];
+        }
+
+        if (empty($subNavs)) {
+            return null;
+        }
+
+        // A single sub nav item is redundant
+        if (count($subNavs) === 1) {
+            $subNavs = [];
         }
 
         return array_merge($navItem, [
@@ -218,159 +192,173 @@ class Shortlink extends Plugin
     }
 
     // Protected Methods
-    // =================
+    // =========================================================================
 
-    protected function installEventListeners()
+    /**
+     * @inheritdoc
+     */
+    protected function settingsHtml(): ?string
     {
-        $request = Craft::$app->getRequest();
-        // Install our event listeners
-        if ($request->getIsCpRequest() && !$request->getIsConsoleRequest()) {
-            $this->installCpEventListeners();
-        }
+        return Craft::$app->getView()->renderTemplate(
+            'shortlink/settings/_edit',
+            ['settings' => $this->getSettings()]
+        );
     }
 
-    protected function installCpEventListeners(): void
+
+
+    /**
+     * @inheritdoc
+     */
+    protected function createSettingsModel(): ?Model
     {
-        Event::on(
-            UrlManager::class,
-            UrlManager::EVENT_REGISTER_CP_URL_RULES,
-            function (RegisterUrlRulesEvent $event) {
-                Craft::debug(
-                    'UrlManager::EVENT_REGISTER_CP_URL_RULES',
-                    __METHOD__
-                );
-                // Register our control panel routes
-                $event->rules = array_merge(
-                    $event->rules,
-                    $this->customAdminCpRoutes()
-                );
-            }
-        );
-
-        Event::on(
-            UserPermissions::class,
-            UserPermissions::EVENT_REGISTER_PERMISSIONS,
-            function (RegisterUserPermissionsEvent $event) {
-                Craft::debug(
-                    'UserPermissions::EVENT_REGISTER_PERMISSIONS',
-                    __METHOD__
-                );
-                // Register our custom permissions
-                $event->permissions[] = [
-                    'heading' => Craft::t('shortlink', 'Shortlink'),
-                    'permissions' => $this->customAdminCpPermissions()
-                ];
-            }
-        );
-
-        Event::on(
-            Entry::class,
-            Entry::EVENT_DEFINE_SIDEBAR_HTML,
-            function (DefineHtmlEvent $event) {
-                Craft::debug(
-                    'Entry::EVENT_DEFINE_SIDEBAR_HTML',
-                    __METHOD__
-                );
-                /* @var Entry $entry */
-                $entry = $event->sender;
-                $html = '';
-                    if ($entry->uri !== null) {
-                        $html = $this->renderSidebar($entry);
-                    }
-                    $event->html .= $html;
-            }
-        );
-
-        Event::on(
-            Entry::class,
-            Entry::EVENT_AFTER_SAVE,
-            function (ModelEvent $event) {
-                /** @var Entry $entry */
-                $entry = $event->sender;
-                self::getInstance()->shortlinks->onAfterSaveEntry($entry);
-            }
-        );
-
+        return new SettingsModel();
     }
 
-    protected function installGlobalEventListeners(): void
+    /**
+     * @return void
+     */
+    protected function installEventHandlers(): void
     {
         Event::on(
             Plugins::class,
-            Plugins::EVENT_AFTER_LOAD_PLUGINS,
-            function() {
-                // only use this after all plugins are loaded
+            Plugins::EVENT_AFTER_SAVE_PLUGIN_SETTINGS,
+            function(PluginEvent $event) {
+                if ($event->plugin === $this) {
+                    Craft::debug(
+                        'Plugins::EVENT_AFTER_SAVE_PLUGIN_SETTINGS',
+                        __METHOD__
+                    );
+                }
+            }
+        );
+
+        // Register Element Types
+        Event::on(
+            Elements::class,
+            Elements::EVENT_REGISTER_ELEMENT_TYPES,
+            function (RegisterComponentTypesEvent $event) {
+                $event->types[] = Route::class;
+            }
+        );
+
+        $this->registerUserPermissions();
+    }
+
+    // Private Methods
+    // =========================================================================
+
+    /**
+     * Registers CP URL rules event
+     */
+    private function registerCpUrlRules(): void
+    {
+        Event::on(UrlManager::class,
+            UrlManager::EVENT_REGISTER_CP_URL_RULES,
+            function(RegisterUrlRulesEvent $event) {
+                // Merge so that settings controller action comes first (important!)
+                $event->rules = array_merge(
+                    [
+                        'shortlink' => 'shortlink/settings/edit',
+                        'shortlink/settings' => 'shortlink/settings/edit',
+                        'shortlink/plugins/shortlink' => 'shortlink/settings/edit',
+                        'shortlink/routes' => ['template' => 'shortlink/routes/_index.twig'],
+                        'shortlink/routes/<elementId:\d+>' => 'elements/edit',
+                    ],
+                    $event->rules,
+                );
+            }
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    private function registerSiteEventHandlers(): void
+    {
+        Event::on(
+            Application::class,
+            Application::EVENT_BEFORE_REQUEST,
+            function (Event $event) {
                 $request = Craft::$app->getRequest();
-                // Only non-console site requests
-                if ($request->getIsSiteRequest() && !$request->getIsConsoleRequest()) {
-                    Shortlink::$plugin->shortlinks->handleRedirect();
+                // only handle this on actual site requests
+                if ($request->getIsSiteRequest() && !$request->getIsLivePreview() && !$request->getIsConsoleRequest() && !$request->getIsCpRequest()) {
+                    Shortlink::$plugin->redirects->handleRedirect();
                 }
             }
         );
     }
 
     /**
-     * Return the custom Control Panel routes
-     *
-     * @return array
+     * Registers user permissions
      */
-    protected function customAdminCpRoutes(): array
+    private function registerUserPermissions(): void
     {
-        return [
-            'shortlink' => 'shortlink/settings/dashboard',
-            'shortlink/dashboard' => 'shortlink/settings/dashboard',
-            'shortlink/custom-shortlinks' => 'shortlink/settings/custom-shortlinks',
-            'shortlink/custom-shortlinks/add' => 'shortlink/settings/custom-shortlinks-add',
-            'shortlink/custom-shortlinks/edit/<shortlinkId:\d+>' => 'shortlink/settings/custom-shortlinks-edit',
-            'shortlink/custom-shortlinks/delete/<shortlinkId:\d+>' => 'shortlink/settings/custom-shortlinks-delete',
-            'shortlink/plugin' => 'shortlink/settings/plugin',
-        ];
-    }
-
-    /**
-     * Return the custom Control Panel user permissions.
-     *
-     * @return array
-     */
-    protected function customAdminCpPermissions(): array
-    {
-        return [
-            'shortlink:dashboard' => [
-                'label' => Craft::t('shortlink', 'Dashboard'),
-            ],
-            'shortlink:custom-shortlinks' => [
-                'label' => Craft::t('shortlink', 'Custom Shortlinks'),
-            ],
-            'shortlink:plugin-settings' => [
-                'label' => Craft::t('shortlink', 'Edit Plugin Settings'),
-            ],
-            'shortlink:entry-redirect' => [
-                'label' => Craft::t('shortlink', 'Allow redirect type on entries')
-            ]
-        ];
-    }
-
-    /**
-     * @param Element $element
-     *
-     * @return string
-     * @throws LoaderError
-     * @throws RuntimeError
-     * @throws SyntaxError
-     */
-    protected function renderSidebar(Element $element): string
-    {
-        $user = Craft::$app->getUser();
-        return PluginTemplate::renderPluginTemplate(
-            '_sidebars/entry-shortlink.twig',
-            [
-                'currentSiteId' => $element->siteId ?? 0,
-                'showRedirectOption' => $user->checkPermission('shortlink:entry-redirect'),
-                'allowCustom' => self::$settings->allowCustom,
-                'redirectType' => self::$settings->redirectType,
-                'shortlink' => self::getInstance()->shortlinks->getShortlink($element),
-            ]
+        Event::on(UserPermissions::class, UserPermissions::EVENT_REGISTER_PERMISSIONS,
+            function(RegisterUserPermissionsEvent $event) {
+                $event->permissions[] = [
+                    'heading' => 'Shortlink',
+                    'permissions' => [
+                        'shortlink:settings' => [
+                            'label' => Craft::t('shortlink', 'Manage plugin settings.'),
+                        ],
+                        'shortlink:view-routes' => [
+                            'label' => Craft::t('shortlink', 'View shortlink routes.'),
+                        ],
+                        'shortlink:save-routes' => [
+                            'label' => Craft::t('shortlink', 'Save/edit shortlink routes.'),
+                        ],
+                        'shortlink:delete-routes' => [
+                            'label' => Craft::t('shortlink', 'Delete shortlink routes.'),
+                        ],
+                    ],
+                ];
+            }
         );
     }
 
+    private function registerRouteFieldLayout(): void
+    {
+        Event::on(
+            FieldLayout::class,
+            FieldLayout::EVENT_DEFINE_NATIVE_FIELDS,
+            function (DefineFieldLayoutFieldsEvent $event) {
+                /** @var FieldLayout $fieldLayout */
+                $fieldLayout = $event->sender;
+
+                // We only want to provide these options for our route field layouts:
+                if ($fieldLayout->type !== Route::class) {
+                    return;
+                }
+
+                // Add our custom fields
+                foreach ($this->getRoutes()->createFields() as $field)
+                {
+                    $event->fields[] = $field;
+                }
+            }
+        );
+    }
+
+    /**
+     * Registers a custom log target
+     *
+     * @see LineFormatter::SIMPLE_FORMAT
+     */
+    private function registerLogTarget(): void
+    {
+        if (Craft::getLogger()->dispatcher instanceof Dispatcher) {
+            Craft::getLogger()->dispatcher->targets[] = new MonologTarget([
+                'name' => 'shortlink',
+                'categories' => ['shortlink'],
+                'level' => LogLevel::INFO,
+                'logContext' => false,
+                'allowLineBreaks' => true,
+                'formatter' => new LineFormatter(
+                    format: "%datetime% [%channel%.%level_name%] %message% %context%\n",
+                    dateFormat: 'Y-m-d H:i:s',
+                ),
+            ]);
+        }
+    }
 }

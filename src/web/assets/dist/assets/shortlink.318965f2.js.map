@@ -1,1 +1,0 @@
-{"version":3,"file":"shortlink.318965f2.js","sources":["../../../../../buildchain/src/js/shortlink.ts"],"sourcesContent":["// Import our CSS\nimport '~/css/app.css';\n\nconst main = async () => {\n};\n\nmain().then( (root) => {\n    console.log()\n});\n"],"names":["main","root"],"mappings":"AAGA,MAAMA,EAAO,SAAY,CACzB,EAEAA,IAAO,KAAOC,GAAS,CACnB,QAAQ,IAAI,CAChB,CAAC"}

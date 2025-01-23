@@ -1,56 +1,22 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- Generator: Adobe Illustrator 26.5.0, SVG Export Plug-In . SVG Version: 6.00 Build 0)  -->
-<svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
-	 viewBox="0 0 1000 1000" enable-background="new 0 0 1000 1000" xml:space="preserve">
-<path fill="#FFFFFF" d="M500,953.7L107.1,726.9V273.2L500,46.3l392.9,226.9v453.7L500,953.7z M147.9,703.3L500,906.6l352.1-203.3
-	V296.7L500,93.4L147.9,296.7V703.3z"/>
-<g>
-	<g>
-		
-			<radialGradient id="SVGID_1_" cx="833.6212" cy="249.8898" r="445.3288" fx="1215.9374" fy="248.6205" gradientTransform="matrix(0.8377 -0.5462 1.2737 1.9536 -497.172 454.4656)" gradientUnits="userSpaceOnUse">
-			<stop  offset="3.745849e-02" style="stop-color:#D51E69"/>
-			<stop  offset="0.1445" style="stop-color:#B41E7C"/>
-			<stop  offset="0.2727" style="stop-color:#921D90"/>
-			<stop  offset="0.3423" style="stop-color:#851D97"/>
-			<stop  offset="0.4122" style="stop-color:#7C209D"/>
-			<stop  offset="0.526" style="stop-color:#6426AE"/>
-			<stop  offset="0.6508" style="stop-color:#4230C5"/>
-			<stop  offset="0.7123" style="stop-color:#3C39CC"/>
-			<stop  offset="0.8102" style="stop-color:#2A50E0"/>
-			<stop  offset="0.8792" style="stop-color:#1B64F2"/>
-		</radialGradient>
-		<polygon fill="url(#SVGID_1_)" points="852.1,296.7 852.1,703.3 500,906.6 147.9,703.3 147.9,296.7 500,93.4 		"/>
-		
-			<radialGradient id="SVGID_00000026873286616948753510000004315303479090715292_" cx="838.0758" cy="246.7482" r="547.4185" fx="1308.0363" fy="245.1879" gradientTransform="matrix(0.8377 -0.5462 1.2737 1.9536 -492.7513 459.6669)" gradientUnits="userSpaceOnUse">
-			<stop  offset="3.745849e-02" style="stop-color:#D51E69"/>
-			<stop  offset="0.1445" style="stop-color:#B41E7C"/>
-			<stop  offset="0.2727" style="stop-color:#921D90"/>
-			<stop  offset="0.3423" style="stop-color:#851D97"/>
-			<stop  offset="0.4122" style="stop-color:#7C209D"/>
-			<stop  offset="0.526" style="stop-color:#6426AE"/>
-			<stop  offset="0.6508" style="stop-color:#4230C5"/>
-			<stop  offset="0.7123" style="stop-color:#3C39CC"/>
-			<stop  offset="0.8102" style="stop-color:#2A50E0"/>
-			<stop  offset="0.8792" style="stop-color:#1B64F2"/>
-		</radialGradient>
-		<path fill="url(#SVGID_00000026873286616948753510000004315303479090715292_)" d="M500.2,0L67.3,249.9V749l432.2,251l432.7-250.9
-			l0.5-499.2L500.2,0z M892.9,726.9L500,953.7L107.1,726.8V273.2L500,46.3l392.9,226.9V726.9L892.9,726.9z"/>
-	</g>
-	<g opacity="0.2">
-		<polygon fill="#FFFFFF" points="852.1,296.7 852.1,703.3 500,906.6 147.9,703.3 147.9,296.7 500,93.4 		"/>
-	</g>
+<svg width="160" height="160" viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_399_4230)">
+<g clip-path="url(#clip1_399_4230)">
+<path d="M8 8H152V152H8V8Z" fill="#141414"/>
+<path fill-rule="evenodd" clip-rule="evenodd" d="M16 0H24H120H128H136H144V8L136 8H128L120 7.99999L24 8H16V0ZM8 16V8H16V16H8ZM8 144H0V136L1.25889e-05 24L0 16H8V24L8 136V144ZM16 152L16 144H8L8 152H16ZM24 152H16V160L24 160L120 160H128H136H144V152H152V144H160L160 136L160 24V16H152V8L144 8V16H152V24V136V144H144V152H136H128H120H24Z" fill="#00FC19"/>
 </g>
-<g>
-	<path fill="#FFFFFF" d="M482.3,469.7c-19.4-23.1-21.7-52.9,1-78.8c18-19.7,69.9-71.8,89.6-89.7c24.6-22.4,62-20.8,86,2.2
-		c11.6,11.2,23.1,22.6,34.2,34.2c24.6,25.6,24.5,64.2-0.2,89.7c-16.5,17-66.3,66.8-83.3,83.2c-19.2,19.6-57.9,21.7-81.1,5.5
-		c3-3.1,33-33,33-33c7.2,5.3,18.7-0.1,23.3-5.1c15.7-15.4,60.7-64.1,76.2-79.7c9.7-9.7,9.6-22-0.2-31.9c-10-10.1-20-20.1-30-30
-		c-10.3-10.2-22.5-10.3-32.7-0.1c-15.5,15.4-64,64-79.5,79.4c-12.4,12.1-2.9,20.9-2.9,20.9S493,459,482.3,469.7z"/>
-	<path fill="#FFFFFF" d="M433.9,588.6c-10.4,0.1-24.9-14.2-24-24.6c0.3-3.9,2.2-8.5,4.9-11.2c27.8-28.3,108.2-108.5,136.3-136.5
-		c7.3-7.3,16.8-7.2,24.2,0.1c2.1,2,4.2,4.1,6.2,6.2c7.8,7.9,7.8,17.3-0.1,25.2C553.9,475.4,474,555.2,446.3,582.9
-		C442.9,586.4,438.9,588.6,433.9,588.6z"/>
-	<path fill="#FFFFFF" d="M514.3,530.3c19.4,23.1,21.7,52.9-1,78.8c-18,19.7-69.9,71.8-89.6,89.7c-24.6,22.4-62,20.8-86-2.2
-		c-11.6-11.2-23.1-22.6-34.2-34.2c-24.6-25.6-24.5-64.2,0.2-89.7c16.5-17,66.3-66.8,83.3-83.2c19.2-19.6,57.9-21.7,81.1-5.5
-		c-3,3.1-33,33-33,33c-7.2-5.3-18.7,0.1-23.3,5.1c-15.7,15.4-60.7,64.1-76.2,79.7c-9.7,9.7-9.6,22,0.2,31.9c10,10.1,20,20.1,30,30
-		c10.3,10.2,22.5,10.3,32.7,0.1c15.5-15.4,64-64,79.5-79.4c12.4-12.1,2.9-20.9,2.9-20.9S503.6,541,514.3,530.3z"/>
+<g clip-path="url(#clip2_399_4230)">
+<path fill-rule="evenodd" clip-rule="evenodd" d="M104 24H96V32H88V40H80V48H72V56V64H80V72H72V80H64V72H56H48V80H40V88H32V96H24V104V112H32V120H40V128H48V136H56H64V128H72V120H80V112H88V104V96H80V88H88V80H96V88H104H112V80H120V72H128V64H136V56V48H128V40H120V32H112V24H104ZM56 80V88H48V96H40V104V112H48V120H56H64V112H72V104H80V96H72H64V88V80H56ZM96 80V72V64H88H80V56H88V48H96V40H104H112V48H120V56V64H112V72H104V80H96Z" fill="#00FC19"/>
 </g>
+</g>
+<defs>
+<clipPath id="clip0_399_4230">
+<rect width="160" height="160" fill="white"/>
+</clipPath>
+<clipPath id="clip1_399_4230">
+<rect width="160" height="160" fill="white"/>
+</clipPath>
+<clipPath id="clip2_399_4230">
+<rect width="112" height="112" fill="white" transform="translate(24 24)"/>
+</clipPath>
+</defs>
 </svg>

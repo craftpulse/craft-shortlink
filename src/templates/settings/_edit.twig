@@ -1,0 +1,54 @@
+{% requirePermission "shortlink:settings" %}
+
+{% extends "shortlink/_layouts/shortlink-cp.twig" %}
+{% import '_includes/forms.twig' as forms %}
+
+{% set tabs = {
+    domains: { label: 'Custom Domains'|t('shortlink'), url: '#domains' },
+} %}
+
+{% block actionButton %}
+    <input type="submit" class="btn submit" value="{{  'Save'|t('app') }}">
+{% endblock %}
+
+{% block content %}
+    <input type="hidden" name="action" value="shortlink/settings/save">
+    <input type="hidden" name="pluginHandle" value="shortlink">
+
+    <div id="domains" class="flex-fields">
+        <div class="flex field">
+            <div class="flex-grow">
+                {% set cols = {
+                    domain: {
+                        type: 'autosuggest',
+                        heading: 'Domain'|t('shortlink'),
+                        placeholder: 'Enter the domain you want to be redirected.'|t('shortlink'),
+                        info: 'The domain that can be used to redirect to your entries'|t('shortlink'),
+                        suggestEnvVars: true,
+                    },
+                    preserveQuerystring: {
+                        type: 'lightswitch',
+                        heading: 'Preserve querystrings?'|t('shortlink'),
+                        info: 'Do you want to preserve the querystrings coming from the origin?'|t('shortlink'),
+                        value: 1,
+                        thin: true,
+                    }
+                } %}
+
+                {{ forms.editableTableField({
+                    label: 'Domains'|t('shortlink'),
+                    instructions: 'Add your own domains that you would like to use to generate shortlinks.'|t('shortlink'),
+                    name: 'settings[domainNames]',
+                    id: 'domainNames',
+                    cols: cols,
+                    rows: settings.domainNames,
+                    addRowLabel: "Add a domain name"|t('shortlink'),
+                    allowAdd: true,
+                    allowDelete: true,
+                    allowReorder: true,
+                    required: true,
+                }) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

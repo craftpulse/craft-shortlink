@@ -1,217 +1,113 @@
 <?php
+/**
+ * Shortlink plugin for Craft CMS
+ *
+ * @link      https://craft-pulse.com
+ * @copyright Copyright (c) 2025 CraftPulse
+ */
 
-namespace percipiolondon\shortlink\controllers;
+namespace craftpulse\shortlink\controllers;
 
 use Craft;
-use craft\errors\MissingComponentException;
+use craft\helpers\UrlHelper;
 use craft\web\Controller;
+use craft\web\UrlManager;
 
-use percipiolondon\shortlink\elements\ShortlinkElement;
-use percipiolondon\shortlink\records\ShortlinkRecord;
-use percipiolondon\shortlink\Shortlink;
-
-use yii\web\BadRequestHttpException;
+use craftpulse\shortlink\Shortlink;
+use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
 /**
+ * Class SettingsController
  *
- * @author    percipiolondon
- * @package   Shortlink
- * @since     1.0.0
- *
+ * @author      CraftPulse
+ * @package     Shortlink
+ * @since       1.0.0
  */
 class SettingsController extends Controller
 {
     /**
-     * Settings display
-     *
-     *
-     * @return Response The rendered result
-     * @throws NotFoundHttpException
-     * @throws ForbiddenHttpException
+     * @inheritdoc
      */
-    public function actionPlugin(): Response
+    public function beforeAction($action): bool
     {
-        $variables = [];
-        $pluginName = Shortlink::$settings->pluginName;
-        $templateTitle = Craft::t('shortlink', 'Plugin Settings');
+        $this->requireAdmin();
 
-        $variables['fullPageForm'] = true;
-        $variables['pluginName'] = $pluginName;
-        $variables['title'] = $templateTitle;
-        $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
-        $variables['selectedSubnavItem'] = 'plugin';
-        $variables['settings'] = Shortlink::$settings;
-
-        // Render the template
-        return $this->renderTemplate('shortlink/settings/shortlink-settings', $variables);
-    }
-
-    public function actionDashboard(): Response
-    {
-        $variables = [];
-        $pluginName = Shortlink::$settings->pluginName;
-        $templateTitle = Craft::t('shortlink', 'Dashboard');
-
-        $variables['fullPageForm'] = true;
-        $variables['pluginName'] = $pluginName;
-        $variables['title'] = $templateTitle;
-        $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
-        $variables['selectedSubnavItem'] = 'dashboard';
-
-        // Render the template
-        return $this->renderTemplate('shortlink/dashboard', $variables);
-    }
-
-    public function actionCustomShortlinks(): Response
-    {
-        $variables = [];
-        $pluginName = Shortlink::$settings->pluginName;
-        $templateTitle = Craft::t('shortlink', 'Custom Shortlinks');
-
-        $variables['fullPageForm'] = true;
-        $variables['pluginName'] = $pluginName;
-        $variables['title'] = $templateTitle;
-        $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
-        $variables['selectedSubnavItem'] = 'custom-shortlinks';
-        $variables['currentSiteId'] = Craft::$app->getSites()->getCurrentSite()->id;
-        $variables['shortlinks'] = ShortlinkRecord::findAll(['ownerId' => null]);
-
-        // Render the template
-        return $this->renderTemplate('shortlink/custom-shortlinks', $variables);
-    }
-
-    public function actionCustomShortlinksAdd(): Response
-    {
-        $variables = [];
-        $pluginName = Shortlink::$settings->pluginName;
-        $templateTitle = Craft::t('shortlink', 'Custom Shortlinks');
-
-        $variables['fullPageForm'] = true;
-        $variables['pluginName'] = $pluginName;
-        $variables['title'] = $templateTitle;
-        $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
-        $variables['selectedSubnavItem'] = 'custom-shortlinks';
-        $variables['shortlink'] = null;
-
-        // Render the template
-        return $this->renderTemplate('shortlink/custom-shortlinks/form', $variables);
-    }
-
-    public function actionCustomShortlinksEdit(int $shortlinkId): Response
-    {
-        $variables = [];
-        $pluginName = Shortlink::$settings->pluginName;
-        $templateTitle = Craft::t('shortlink', 'Custom Shortlinks');
-        $shortlink = ShortlinkElement::findOne($shortlinkId);
-
-        if (is_null($shortlink)) {
-            throw new NotFoundHttpException(Craft::t('shortlink', 'Shortlink does not exist'));
-        }
-
-        $variables['fullPageForm'] = true;
-        $variables['pluginName'] = $pluginName;
-        $variables['title'] = $templateTitle;
-        $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
-        $variables['selectedSubnavItem'] = 'custom-shortlinks';
-        $variables['shortlink'] = $shortlink;
-
-        // Render the template
-        return $this->renderTemplate('shortlink/custom-shortlinks/form', $variables);
-    }
-
-    public function actionCustomShortlinksDelete(int $shortlinkId): Response
-    {
-        $shortlink = ShortlinkElement::findOne($shortlinkId);
-
-        if (is_null($shortlink)) {
-            throw new NotFoundHttpException(Craft::t('shortlink', 'Shortlink does not exist'));
-        }
-
-        $success = Craft::$app->getElements()->deleteElement($shortlink);
-
-        if (!$success) {
-            throw new NotFoundHttpException(Craft::t('shortlink', 'Shortlink cannot be deleted'));
-        }
-
-        return $this->redirect('/admin/shortlink/custom-shortlinks');
-    }
-
-    public function actionCustomShortlinksSave(): Response
-    {
-        $this->requireLogin();
-        $this->requirePostRequest();
-
-        $request = Craft::$app->getRequest();
-
-        $shortlinkId = $request->getBodyParam('shortlinkId');
-        $shortlink = ShortlinkElement::findOne($shortlinkId);
-
-        if (is_null($shortlink)) {
-            $shortlink = new ShortlinkElement();
-        }
-
-        $shortlink->shortlinkUri = $request->getBodyParam('shortlinkUri') ?? null;
-        $shortlink->destination = $request->getBodyParam('destination') ?? null;
-        $shortlink->httpCode = $request->getBodyParam('httpCode') ?? null;
-        $shortlink->isCustom = true;
-
-        $success = Craft::$app->getElements()->saveElement($shortlink);
-
-        if ($success) {
-            return $this->redirect('/admin/shortlink/custom-shortlinks');
-        }
-
-        $variables = [];
-        $pluginName = Shortlink::$settings->pluginName;
-        $templateTitle = Craft::t('shortlink', 'Custom Shortlinks');
-
-        $variables['fullPageForm'] = true;
-        $variables['pluginName'] = $pluginName;
-        $variables['title'] = $templateTitle;
-        $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
-        $variables['selectedSubnavItem'] = 'custom-shortlinks';
-        $variables['shortlink'] = $shortlink;
-
-        return $this->renderTemplate('staff-management/benefits/policy/form', $variables);
+        return parent::beforeAction($action);
     }
 
     /**
-     * Saves a plugin’s settings.
-     *
      * @return Response|null
-     * @throws NotFoundHttpException if the requested plugin cannot be found
-     * @throws BadRequestHttpException
-     * @throws MissingComponentException
      */
-    public function actionSavePluginSettings(): ?Response
+    public function actionEdit(): ?Response
     {
+        // Ensure they have permission to edit the plugin settings
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        if (!$currentUser->can('shortlink:settings')) {
+            throw new ForbiddenHttpException('You do not have permission to edit the Shortlink settings.');
+        }
+        $general = Craft::$app->getConfig()->getGeneral();
+        if (!$general->allowAdminChanges) {
+            throw new ForbiddenHttpException('Unable to edit Shortlink plugin settings because admin changes are disabled in this environment.');
+        }
+
+        // Edit the plugin settings
+        $variables = [];
+        $pluginName = 'Shortlink';
+        $templateTitle = Craft::t('shortlink', 'Plugin settings');
+
+        $variables['fullPageForm'] = true;
+        $variables['pluginName'] = $pluginName;
+        $variables['title'] = $templateTitle;
+        $variables['docTitle'] = "{$pluginName} - {$templateTitle}";
+        $variables['crumbs'] = [
+            [
+                'label' => $pluginName,
+                'url' => UrlHelper::cpUrl('shortlink'),
+            ],
+            [
+                'label' => $templateTitle,
+                'url' => UrlHelper::cpUrl('shortlink/plugin'),
+            ],
+        ];
+        $variables['settings'] = Shortlink::$plugin->settings;
+
+        return $this->renderTemplate('shortlink/settings/_edit', $variables);
+    }
+
+    /**
+     * Saves the plugin settings
+     */
+    public function actionSave(): ?Response
+    {
+        // Ensure they have permission to edit the plugin settings
+        $currentUser = Craft::$app->getUser()->getIdentity();
+        if (!$currentUser->can('pp:settings')) {
+            throw new ForbiddenHttpException('You do not have permission to edit the Shortlink settings.');
+        }
+        $general = Craft::$app->getConfig()->getGeneral();
+        if (!$general->allowAdminChanges) {
+            throw new ForbiddenHttpException('Unable to edit Shortlink plugin settings because admin changes are disabled in this environment.');
+        }
+
+        // Save the plugin settings
         $this->requirePostRequest();
         $pluginHandle = Craft::$app->getRequest()->getRequiredBodyParam('pluginHandle');
         $plugin = Craft::$app->getPlugins()->getPlugin($pluginHandle);
+        $settings = Craft::$app->getRequest()->getBodyParam('settings', []);
 
         if ($plugin === null) {
             throw new NotFoundHttpException('Plugin not found');
         }
 
-        $settings = [
-            'allowCustom' => Craft::$app->getRequest()->getBodyParam('allowCustom') === '1',
-            'alphaNumeric' => Craft::$app->getRequest()->getBodyParam('alphaNumeric'),
-            'redirectBehavior' => Craft::$app->getRequest()->getBodyParam('redirectBehavior'),
-            'casing' => Craft::$app->getRequest()->getBodyParam('casing'),
-            'maxLength' => (int) Craft::$app->getRequest()->getBodyParam('maxLength'),
-            'minLength' => (int) Craft::$app->getRequest()->getBodyParam('minLength'),
-            'redirectType' => Craft::$app->getRequest()->getBodyParam('redirectType'),
-            'redirectQueryString' => Craft::$app->getRequest()->getBodyParam('redirectQueryString') === '1',
-            'shortlinkUrls' => Craft::$app->getRequest()->getBodyParam('shortlinkUrls'),
-        ];
-
-        if(!Craft::$app->getPlugins()->savePluginSettings($plugin, $settings)) {
+        if (!Craft::$app->getPlugins()->savePluginSettings($plugin, $settings)) {
             Craft::$app->getSession()->setError(Craft::t('app', "Couldn't save plugin settings."));
 
-            // Send the plugin back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
+            // Send the redirect back to the template
+            /** @var UrlManager $urlManager */
+            $urlManager = Craft::$app->getUrlManager();
+            $urlManager->setRouteParams([
                 'plugin' => $plugin,
             ]);
 

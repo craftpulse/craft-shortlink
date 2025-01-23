@@ -1,0 +1,14 @@
+{% extends '_layouts/elementindex' %}
+{% set title = 'Routes'|t('app') %}
+{% set elementType = 'craftpulse\\shortlink\\elements\\Route' %}
+{% set canHaveDrafts = false %}
+
+{% block actionButton %}
+    {{ tag('a', {
+        class: 'btn submit add icon',
+        href: actionUrl('elements/create', {
+            elementType: elementType
+        }),
+        text: 'New route'|t('shortlink'),
+    }) }}
+{% endblock %}

@@ -1,125 +1,159 @@
 <?php
+/**
+ * Shortlink plugin for Craft CMS
+ *
+ * @link      https://craft-pulse.com
+ * @copyright Copyright (c) 2025 CraftPulse
+ */
 
-namespace percipiolondon\shortlink\migrations;
+namespace craftpulse\shortlink\migrations;
 
 use Craft;
 use craft\db\Migration;
+use craft\fieldlayoutelements\TextField;
 use craft\helpers\Db;
-use percipiolondon\shortlink\db\Table;
+use craft\models\FieldLayout;
+use craft\models\FieldLayoutTab;
+use craft\records\FieldLayout as FieldLayoutRecord;
+
+use craftpulse\shortlink\Shortlink;
+use craftpulse\shortlink\elements\Route as RouteElement;
+use craftpulse\shortlink\records\RouteRecord;
+use craftpulse\shortlink\services\Routes;
+
+use yii\base\Exception;
 
 /**
- * Install migration.
+ * @author    CraftPulse
+ * @package   Shortlink
+ * @since     1.0.0
  */
 class Install extends Migration
 {
+    // Public Properties
+    // =========================================================================
+
     /**
-     * @var string|null
+     * @var ?string The database driver to use
      */
-    public string|null $driver = null;
+    public ?string $driver = null;
+
+    // Public Methods
+    // =========================================================================
 
     /**
      * @inheritdoc
+     * @throws Exception
      */
     public function safeUp(): bool
     {
-        // Refresh the db schema caches
         $this->driver = Craft::$app->getConfig()->getDb()->driver;
         if ($this->createTables()) {
-            $this->createIndexes();
             $this->addForeignKeys();
+            $this->addFieldLayout();
+
+            // Refresh the db schema caches
             Craft::$app->db->schema->refresh();
         }
 
         return true;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function safeDown(): bool
     {
         $this->dropForeignKeys();
         $this->dropTables();
+        Craft::$app->getFields()->deleteLayoutsByType(RouteElement::class);
+
+        return true;
+    }
+
+    // Protected Methods
+    // =========================================================================
+
+    /**
+     * Creates the tables.
+     *
+     * @return bool
+     * @throws Exception
+     */
+    protected function createTables(): bool
+    {
+        if(!$this->db->tableExists(RouteRecord::tableName())) {
+            $this->createTable(
+                '{{%shortlink_routes}}',
+                [
+                    'id' => $this->primaryKey(),
+                    'dateCreated' => $this->dateTime()->notNull(),
+                    'dateUpdated' => $this->dateTime()->notNull(),
+                    'uid' => $this->uid(),
+                    'fieldLayoutId' => $this->integer(),
+
+                    // data
+                    'origin' => $this->string(),
+                    'uriPattern' => $this->string(),
+                    'destination' => $this->string(),
+                    'matchType' => $this->string()->defaultValue('exact'),
+                    'httpCode' => $this->integer()->defaultValue(301),
+                    'hitCount' => $this->integer()->defaultValue(0),
+                    'lastUsed' => $this->dateTime(),
+                ]
+            );
+        }
+
         return true;
     }
 
     /**
-     * @return bool
-     */
-    public function createTables(): bool
-    {
-        $tableRoutesCreated = false;
-        $tableSchemaRoutes = Craft::$app->db->schema->getTableSchema(Table::ROUTES);
-
-        if ($tableSchemaRoutes === null) {
-            $this->createTable(Table::ROUTES, [
-                'id' => $this->primaryKey(),
-                'dateCreated' => $this->dateTime()->notNull(),
-                'dateUpdated' => $this->dateTime()->notNull(),
-                'uid' => $this->uid(),
-                // foreign keys
-                'siteId' => $this->integer(),
-                'ownerId' => $this->integer(),
-                'ownerRevisionId' => $this->integer(),
-                // fields
-                'shortlinkUri' => $this->string(255)->notNull(),
-                'destination' => $this->string(255),
-                'httpCode' => $this->string()->notNull(),
-                'hitCount' => $this->integer()->defaultValue(0),
-                'lastUsed' => $this->dateTime(),
-                'shortlinkStatus' => $this->enum('status', ['active', 'inactive'])->notNull(),
-            ]);
-
-            $tableRoutesCreated = true;
-        }
-
-        return $tableRoutesCreated;
-    }
-
-    /**
-     *
-     */
-    public function createIndexes(): void
-    {
-        $this->createIndex(null, Table::ROUTES, 'siteId', false);
-        $this->createIndex(null, Table::ROUTES, 'ownerId', false);
-        $this->createIndex(null, Table::ROUTES, 'ownerRevisionId', false);
-        $this->createIndex(null, Table::ROUTES, 'shortlinkUri', false);
-        $this->createIndex(null, Table::ROUTES, 'destination', false);
-
-    }
-
-    /**
-     *
+     * @inheritdoc
      */
     public function addForeignKeys(): void
     {
-        $this->addForeignKey(null, Table::ROUTES, 'id', \craft\db\Table::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
-        $this->addForeignKey(null, Table::ROUTES, 'siteId', \craft\db\Table::SITES, ['id'], 'CASCADE', 'CASCADE');
-        $this->addForeignKey(null, Table::ROUTES, 'ownerId', \craft\db\Table::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
-        $this->addForeignKey(null, Table::ROUTES, 'ownerRevisionId', \craft\db\Table::ELEMENTS, ['id'], 'CASCADE', 'CASCADE');
+        $this->addForeignKey(
+            null,
+            '{{%shortlink_routes}}',
+            'id',
+            '{{%elements}}',
+            'id',
+            'CASCADE',
+            null
+        );
+    }
+
+    public function addFieldLayout(): void
+    {
+        $fieldLayout = Craft::$app->getFields()->getLayoutByType(RouteElement::class) ?? new FieldLayout();
+
+        $tab = new FieldLayoutTab(['name' => 'Route']);
+        $tab->setLayout($fieldLayout);
+
+        $tab->setElements(Shortlink::$plugin->routes->createFields());
+        $fieldLayout->setTabs([$tab]);
+
+        Craft::$app->getFields()->saveLayout($fieldLayout);
     }
 
     /**
-     *
+     * @inheritdoc
      */
     public function dropForeignKeys(): void
     {
-        $tables = [
-            'shortlink_routes'
-        ];
-
-        foreach ($tables as $table) {
-            if ($this->db->tableExists('{{%' . $table . '}}')) {
-                Db::dropAllForeignKeysToTable('{{%' . $table . '}}');
-            }
+        if ($this->db->tableExists('{{%shortlink_routes}}')) {
+            Db::dropAllForeignKeysToTable('{{%shortlink_routes}}');
         }
     }
 
     /**
-     *
+     * @inheritdoc
      */
     public function dropTables(): void
     {
-        if (Craft::$app->db->schema->getTableSchema(Table::ROUTES)) {
-            $this->dropTable(Table::ROUTES);
+        if (Craft::$app->db->schema->getTableSchema('{{%shortlink_routes}}')) {
+            $this->dropTable('{{%shortlink_routes}}');
         }
     }
+
 }

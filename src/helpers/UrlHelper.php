@@ -1,9 +1,22 @@
 <?php
+/**
+ * Shortlink plugin for Craft CMS
+ *
+ * @link      https://craft-pulse.com
+ * @copyright Copyright (c) 2025 CraftPulse
+ */
 
-namespace percipiolondon\shortlink\helpers;
+namespace craftpulse\shortlink\helpers;
 
 use craft\helpers\UrlHelper as CraftUrlHelper;
 
+/**
+ * UrlHelper
+ *
+ * @author      CraftPulse
+ * @package     Shortlink
+ * @since       1.0.0
+ */
 class UrlHelper extends CraftUrlHelper
 {
     /**
@@ -22,16 +35,46 @@ class UrlHelper extends CraftUrlHelper
             parse_str($parsedUrl['query'] ?? '', $params);
             $queryParams[] = $params;
         }
-        $queryParams = array_unique(array_merge([], ...$queryParams));
+        $queryParams = array_unique(array_merge([], ...$queryParams), SORT_REGULAR);
 
         return http_build_query($queryParams);
+    }
+
+    /**
+     * Clean up the passed in text by converting it to UTF-8, stripping tags,
+     * removing whitespace, and decoding HTML entities
+     *
+     * @param string $path
+     * @return string
+     */
+    public static function cleanPath(string $path): string
+    {
+        if (empty($path)) {
+            return '';
+        }
+        // Convert to UTF-8
+        if (function_exists('iconv')) {
+            $path = iconv(mb_detect_encoding($path, mb_detect_order(), true), 'UTF-8//IGNORE', $path);
+        } else {
+            ini_set('mbstring.substitute_character', 'none');
+            $path = mb_convert_encoding($path, 'UTF-8', 'UTF-8');
+        }
+        // Strip HTML tags
+        $path = strip_tags($path);
+
+        // Remove whitespace
+        $path = preg_replace('/\s{2,}/u', ' ', $path);
+
+        // Decode HTML entities
+        $path = html_entity_decode($path);
+
+        return $path;
     }
 
     /**
      * Return a sanitized URL
      *
      * @param string $url
-     *
      * @return string
      */
     public static function sanitizeUrl(string $url): string
