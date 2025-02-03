@@ -68,6 +68,11 @@ class Redirects extends Component
 
             // Redirect if we find a route match, otherwise let Craft handle it.
             $redirect = $this->matchRoute($host, $path);
+            // If $redirect is null, try again without the Querystring
+            if (!$redirect) {
+                $redirect = $this->matchRoute($host, $path, false);
+            }
+
             $this->doRedirect($url, $path, $domainProperties, $redirect, $preserveQuerystring);
         }
     }
@@ -145,7 +150,12 @@ class Redirects extends Component
      * @return array|null
      * @throws \yii\base\ExitException
      */
-    private function matchRoute(string $host, string $path, $siteId = null): ?array {
+    private function matchRoute(string $host, string $path, bool $useQuerystring = true, $siteId = null): ?array {
+
+        // Strip the QueryString when useQueryString is false
+        if (!$useQuerystring) {
+            $path = UrlHelper::stripQuerystring($path);
+        }
 
         // @TODO - move to our "Routes" Service
         if (is_null($siteId)) {

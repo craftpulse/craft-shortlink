@@ -431,7 +431,7 @@ class Route extends Element
             $routeRecord->origin = $this->origin;
             $routeRecord->destination = $this->destination;
             $routeRecord->matchType = $this->matchType;
-            $routeRecord->httpCode = (int) $this->httpCode;
+            $routeRecord->httpCode = (int)$this->httpCode;
             $routeRecord->uriPattern = $this->uriPattern;
             $routeRecord->fieldLayoutId = $this->fieldLayout->id;
 

@@ -85,7 +85,7 @@ class DropdownField extends BaseNativeField
                 'id' => $this->id,
                 'name' => $this->name ?? $this->attribute(),
                 'options' => $this->options,
-                'value' => $element->httpCode,
+                'value' => $this->value($element),
                 'autocomplete' => 'off',
                 'disabled' => $static,
             ]);
