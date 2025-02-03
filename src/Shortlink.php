@@ -19,7 +19,6 @@ use craft\events\PluginEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
-use craft\fieldlayoutelements\TextField;
 use craft\log\MonologTarget;
 use craft\models\FieldLayout;
 use craft\services\Elements;
@@ -259,7 +258,7 @@ class Shortlink extends Plugin
                 // Merge so that settings controller action comes first (important!)
                 $event->rules = array_merge(
                     [
-                        'shortlink' => 'shortlink/settings/edit',
+                        'shortlink' => ['template' => 'shortlink/routes/_index.twig'],
                         'shortlink/settings' => 'shortlink/settings/edit',
                         'shortlink/plugins/shortlink' => 'shortlink/settings/edit',
                         'shortlink/routes' => ['template' => 'shortlink/routes/_index.twig'],
