@@ -11,7 +11,6 @@ namespace craftpulse\shortlink\services;
 use Craft;
 use craft\base\Component;
 use craft\errors\ExitException;
-use craft\web\Request;
 use craft\db\Query;
 
 use craftpulse\shortlink\records\RouteRecord;
@@ -19,13 +18,15 @@ use craftpulse\shortlink\Shortlink;
 use craftpulse\shortlink\helpers\UrlHelper;
 
 use Illuminate\Support\Collection;
+use yii\base\Exception;
+use yii\base\InvalidConfigException;
+use yii\base\InvalidRouteException;
 
 /**
  * Redirects Service
  *
  * @author    CraftPulse
  * @package   Shortlink
- * @since     1.0.0
  */
 class Redirects extends Component
 {
@@ -33,10 +34,10 @@ class Redirects extends Component
     // =========================================================================
     /**
      * @return void
-     * @throws \yii\base\Exception
-     * @throws \yii\base\ExitException
-     * @throws \yii\base\InvalidConfigException
-     * @throws \yii\base\InvalidRouteException
+     * @throws Exception
+     * @throws ExitException
+     * @throws InvalidConfigException
+     * @throws InvalidRouteException|\yii\base\ExitException
      */
     public function handleRedirect(): void
     {
@@ -44,7 +45,6 @@ class Redirects extends Component
 
         $host = urldecode($request->getHostInfo());
         $path = urldecode($request->getUrl());
-        $url = urldecode($request->getAbsoluteUrl());
 
         $domain = $this->checkDomains($host);
 
@@ -58,12 +58,6 @@ class Redirects extends Component
             // @TODO add multisite support
             if(!$preserveQuerystring) {
                 $path = UrlHelper::stripQuerystring($path);
-                $url = UrlHelper::stripQuerystring($url);
-            }
-
-            // Go to the homepage if someone hits the root of the shortlink domain
-            if ($path === '/') {
-                $this->doHomepageRedirect($host);
             }
 
             // Redirect if we find a route match, otherwise let Craft handle it.
@@ -73,7 +67,12 @@ class Redirects extends Component
                 $redirect = $this->matchRoute($host, $path, false);
             }
 
-            $this->doRedirect($url, $path, $domainProperties, $redirect, $preserveQuerystring);
+            // Go to the homepage if someone hits the root of the shortlink domain and we didn't resolve a route
+            if ($path === '/') {
+                $this->doHomepageRedirect($host);
+            }
+
+            $this->doRedirect($domainProperties, $redirect);
         }
     }
 
@@ -83,8 +82,8 @@ class Redirects extends Component
     /**
      * @param string $host
      * @return void
-     * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidRouteException
+     * @throws Exception
+     * @throws InvalidRouteException
      */
     private function doHomepageRedirect(string $host): void
     {
@@ -93,24 +92,19 @@ class Redirects extends Component
     }
 
     /**
-     * @param string $url
-     * @param string $pathOnly
      * @param array $host
      * @param array|null $redirect
-     * @return bool
-     * @throws \yii\base\Exception
-     * @throws \yii\base\ExitException
-     * @throws \yii\base\InvalidConfigException
-     * @throws \yii\base\InvalidRouteException
+     * @return void
+     * @throws Exception
+     * @throws ExitException
+     * @throws InvalidConfigException|\yii\base\ExitException
      */
-    private function doRedirect(string $url, string $pathOnly, array $host, ?array $redirect): bool
+    private function doRedirect(array $host, ?array $redirect): void
     {
         $response = Craft::$app->getResponse();
 
         if (!is_null($redirect)) {
             $destination = $redirect['destination'];
-            $path = $redirect['destination'];
-            $url = $pathOnly;
 
             // We do not have the URL of our primary site yet
             // @TODO add multisite support (need to add SiteID support)
@@ -139,18 +133,16 @@ class Redirects extends Component
                 Craft::error($error->getMessage(), __METHOD__);
             }
         }
-
-        return false;
     }
 
     /**
      * @param string $host
      * @param string $path
-     * @param $siteId
+     * @param bool $useQuerystring
+     * @param int|null $siteId
      * @return array|null
-     * @throws \yii\base\ExitException
      */
-    private function matchRoute(string $host, string $path, bool $useQuerystring = true, $siteId = null): ?array {
+    private function matchRoute(string $host, string $path, bool $useQuerystring = true, ?int $siteId = null): ?array {
 
         // Strip the QueryString when useQueryString is false
         if (!$useQuerystring) {
@@ -296,13 +288,11 @@ class Redirects extends Component
         // Create a needle, just to make sure we search with trailing slash too
         $needle = $this->generateHostNeedle($host);
 
-        if (!$needle) return false;
+        if (!$needle) return null;
 
         // Fetch the urls from our settings (which is an array)
-        $domains = Collection::make(Shortlink::$plugin->settings->domainNames)->filter(function (array $value) use ($needle) {
-            return in_array($value['domain'], $needle);
+        return Collection::make(Shortlink::$plugin->settings->domainNames)->filter(function (array $value) use ($needle) {
+            return in_array($needle, $value['domain']);
         });
-
-        return $domains;
     }
 }

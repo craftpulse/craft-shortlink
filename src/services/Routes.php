@@ -22,7 +22,6 @@ use yii\base\Component;
  *
  * @author    CraftPulse
  * @package   Shortlink
- * @since     1.0.0
  */
 class Routes extends Component
 {

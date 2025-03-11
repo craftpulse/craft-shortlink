@@ -8,16 +8,16 @@
 
 namespace craftpulse\shortlink\records;
 
+use craft\base\Element;
+use craft\db\ActiveQuery;
 use craft\db\ActiveRecord;
-use craft\db\Table;
-use yii\db\ActiveQueryInterface;
+use DateTime;
 
 /**
  * Class SettingsModel
  *
  * @author      CraftPulse
  * @package     Shortlink
- * @since       1.0.0
  *
  * @property int $id
  * @property int $hitCount

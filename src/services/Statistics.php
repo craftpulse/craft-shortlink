@@ -26,7 +26,6 @@ use yii\db\Exception;
  *
  * @author    CraftPulse
  * @package   Shortlink
- * @since     1.0.0
  */
 class Statistics extends Component
 {

@@ -16,7 +16,7 @@ use craft\behaviors\EnvAttributeParserBehavior;
  *
  * @author      CraftPulse
  * @package     Shortlink
- * @since       1.0.0
+ *
  */
 class SettingsModel extends Model
 {

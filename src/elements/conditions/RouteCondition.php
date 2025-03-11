@@ -16,7 +16,7 @@ use craft\elements\conditions\ElementCondition;
  *
  * @author      CraftPulse
  * @package     Shortlink
- * @since       1.0.0
+ *
  */
 class RouteCondition extends ElementCondition
 {

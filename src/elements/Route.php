@@ -33,7 +33,7 @@ use DateTime;
  *
  * @author      CraftPulse
  * @package     Shortlink
- * @since       1.0.0
+ *
  */
 class Route extends Element
 {

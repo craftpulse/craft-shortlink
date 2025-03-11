@@ -22,7 +22,7 @@ use http\Exception\InvalidArgumentException;
  *
  * @author      CraftPulse
  * @package     Shortlink
- * @since       1.0.0
+ *
  */
 class DropdownField extends BaseNativeField
 {

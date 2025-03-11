@@ -15,7 +15,6 @@ use craftpulse\shortlink\services\Statistics;
 /**
  * @author    CraftPulse
  * @package   Shortlink
- * @since     1.0.0
  *
  * @property Redirects $redirects
  * @property Routes $routes

@@ -19,6 +19,7 @@ use craft\events\PluginEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\helpers\Json;
 use craft\log\MonologTarget;
 use craft\models\FieldLayout;
 use craft\services\Elements;
@@ -43,7 +44,7 @@ use yii\log\Logger;
  * @package     Shortlink
  * @since       1.0.0
  *
- * @method Settings getSettings()
+ * @property    SettingsModel|null $settings
  */
 class Shortlink extends Plugin
 {

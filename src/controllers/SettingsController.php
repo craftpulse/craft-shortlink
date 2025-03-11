@@ -23,7 +23,7 @@ use yii\web\Response;
  *
  * @author      CraftPulse
  * @package     Shortlink
- * @since       1.0.0
+ * 
  */
 class SettingsController extends Controller
 {

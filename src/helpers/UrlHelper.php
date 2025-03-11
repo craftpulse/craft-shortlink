@@ -15,7 +15,7 @@ use craft\helpers\UrlHelper as CraftUrlHelper;
  *
  * @author      CraftPulse
  * @package     Shortlink
- * @since       1.0.0
+ *
  */
 class UrlHelper extends CraftUrlHelper
 {
