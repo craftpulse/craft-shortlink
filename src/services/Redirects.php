@@ -62,17 +62,20 @@ class Redirects extends Component
 
             // Redirect if we find a route match, otherwise let Craft handle it.
             $redirect = $this->matchRoute($host, $path);
+
             // If $redirect is null, try again without the Querystring
             if (!$redirect) {
                 $redirect = $this->matchRoute($host, $path, false);
+            }
+
+            if ($redirect) {
+                $this->doRedirect($domainProperties, $redirect);
             }
 
             // Go to the homepage if someone hits the root of the shortlink domain and we didn't resolve a route
             if ($path === '/') {
                 $this->doHomepageRedirect($host);
             }
-
-            $this->doRedirect($domainProperties, $redirect);
         }
     }
 
@@ -110,7 +113,7 @@ class Redirects extends Component
             // @TODO add multisite support (need to add SiteID support)
             $destination = UrlHelper::siteUrl($destination, null, null, $redirect['siteId']);
 
-            if((bool)$host['preserveQuerystring']) {
+            if($host['preserveQuerystring']) {
                 $request = Craft::$app->getRequest();
                 $queryString = UrlHelper::combineQueryStringsFromUrls($destination, $request->getUrl());
 
