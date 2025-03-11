@@ -292,7 +292,7 @@ class Redirects extends Component
 
         // Fetch the urls from our settings (which is an array)
         return Collection::make(Shortlink::$plugin->settings->domainNames)->filter(function (array $value) use ($needle) {
-            return in_array($needle, $value['domain']);
+            return in_array($value['domain'], $needle);
         });
     }
 }
