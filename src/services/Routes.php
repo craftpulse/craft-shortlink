@@ -102,7 +102,7 @@ class Routes extends Component
     public function sanitizeDomain(string $domain): ?string {
         // Strip all the unnecessary data to create a value.
         // @TODO - maybe we should keep the domain suffix?
-        preg_match('/(?:https?:\/\/)?(?:www\.)?([^\/.]+)/', $domain, $matches);
+        preg_match('/(?:https?:\/\/)?(?:www\.)?([a-z0-9-]+\.(?:[a-z]{2,}(?:\.[a-z]{2,})?))/i', $domain, $matches);
         $name = $matches[1];
 
         return $name;
