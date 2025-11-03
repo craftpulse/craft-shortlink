@@ -99,13 +99,21 @@ class Routes extends Component
         return $origins;
     }
 
+    /**
+     * Sanitize a domain by removing the protocol while preserving the www subdomain.
+     *
+     * This method extracts the domain name from a full URL, stripping the protocol (http/https)
+     * but keeping the www. prefix if present. This ensures domains like example.com and
+     * www.example.com are treated as distinct values.
+     *
+     * @param string $domain The full domain URL to sanitize (e.g., "https://www.example.com")
+     * @return string|null The sanitized domain (e.g., "www.example.com") or null if no match found
+     */
     public function sanitizeDomain(string $domain): ?string {
-        // Strip all the unnecessary data to create a value.
-        // @TODO - maybe we should keep the domain suffix?
-        preg_match('/(?:https?:\/\/)?(?:www\.)?([a-z0-9-]+\.(?:[a-z]{2,}(?:\.[a-z]{2,})?))/i', $domain, $matches);
-        $name = $matches[1];
+        // Strip protocol but keep www. and domain
+        preg_match('/(?:https?:\/\/)?((?:www\.)?[a-z0-9-]+\.(?:[a-z]{2,}(?:\.[a-z]{2,})?))/i', $domain, $matches);
 
-        return $name;
+        return $matches[1] ?? null;
     }
 
     /**
@@ -113,7 +121,7 @@ class Routes extends Component
      */
     public function createFields(): ?array
     {
-        $fields = [
+        return [
             [
                 'class' => DropdownField::class,
                 'attribute' => 'origin',
@@ -152,7 +160,7 @@ class Routes extends Component
                 'instructions' => Craft::t('shortlink', 'What type of matching should be done with the Legacy URL Pattern.'),
                 'mandatory' => true,
                 'options' => $this->generateMatchOptions(),
-                'width' => '100%',
+                'width' => '50%',
             ],
             [
                 'class' => DropdownField::class,
@@ -161,10 +169,8 @@ class Routes extends Component
                 'instructions' => Craft::t('shortlink', 'Select whether the redirect should be permanent or temporary.'),
                 'mandatory' => true,
                 'options' => $this->generateRedirectOptions(),
-                'width' => '100%',
+                'width' => '50%',
             ]
         ];
-
-        return $fields;
     }
 }
